@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 
+const history = require('connect-history-api-fallback');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3012;
 
@@ -139,16 +141,13 @@ app.delete('/api/categories/:id', async (req, res) => {
   }
 });
 
-const path = require('path');
+// Fallback middleware for SPA routing
+app.use(history());
+
 
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 
-//app.get('*', (req, res) => {
-//  if (!req.path.startsWith('/api/')) {
-//    res.sendFile(path.join(__dirname, '../frontend/index.html'));
-//  }
-//});
 
 // Start server
 app.listen(port, () => {
