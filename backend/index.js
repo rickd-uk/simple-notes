@@ -1,18 +1,117 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
-
 const history = require('connect-history-api-fallback');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
+
+// Error handling for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Keep the server running despite the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Keep the server running despite the error
+});
+
 const app = express();
 const port = process.env.PORT || 3012;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+// Get credentials from .env
+const USERNAME = process.env.AUTH_USERNAME;
+const PASSWORD_HASH = process.env.AUTH_PASSWORD_HASH;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Check if required environment variables are set
+if (!USERNAME || !PASSWORD_HASH || !JWT_SECRET) {
+  console.error('ERROR: Required environment variables are missing. Make sure AUTH_USERNAME, AUTH_PASSWORD_HASH, and JWT_SECRET are set in your .env file.');
+  process.exit(1); // Exit the application with an error
+}
 
 
-// Routes for notes
+const authenticate = (req, res, next) => {
+  const token = req.cookies.auth_token;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Token verification failed:', error.message);
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+
+// Login route (public)
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log('Login attempt:', { username, password: '***' });
+  
+  // Check username first
+  if (username !== USERNAME) {
+    console.log('Login failed - username mismatch');
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+  
+  try {
+    // Use bcrypt to compare the password
+    const passwordMatch = await bcrypt.compare(password, PASSWORD_HASH);
+    
+    if (passwordMatch) {
+      // Create token
+      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '180d' });
+      
+      // Set HTTP-only cookie with token
+      res.cookie('auth_token', token, { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 180 * 24 * 60 * 60 * 1000 // 180 days
+      });
+      
+      console.log('Login successful - token created');
+      return res.json({ success: true });
+    } else {
+      console.log('Login failed - password mismatch');
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Logout route (public)
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.json({ success: true });
+});
+
+// Test route (public)
+app.get('/test', (req, res) => {
+  res.send('Server is working correctly');
+});
+
+// Apply authentication to protected API routes 
+// (MUST come before the route definitions)
+app.use('/api/notes', authenticate);
+app.use('/api/categories', authenticate);
+
+// Protected API Routes for notes
 app.get('/api/notes', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM notes ORDER BY updated_at DESC');
@@ -89,7 +188,7 @@ app.delete('/api/notes/:id', async (req, res) => {
   }
 });
 
-// Routes for categories
+// Protected API Routes for categories
 app.get('/api/categories', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM categories');
@@ -141,15 +240,75 @@ app.delete('/api/categories/:id', async (req, res) => {
   }
 });
 
-// Fallback middleware for SPA routing
-app.use(history());
+// Explicit handler for login page - BEFORE history middleware
+app.get('/login.html', (req, res) => {
+  console.log('Explicitly serving login.html');
+  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
 
+// Authentication check middleware - BEFORE history middleware
+app.use((req, res, next) => {
+  console.log('Path:', req.path, 'Has token:', !!req.cookies.auth_token);
+  
+  const token = req.cookies.auth_token;
+  const isLoginPage = req.path === '/login.html';
+  const isLoginApi = req.path === '/api/login';
+  const isLogoutApi = req.path === '/api/logout';
+  const isTestRoute = req.path === '/test';
+  const isStaticAsset = req.path.startsWith('/css/') || 
+                       req.path.startsWith('/js/') || 
+                       req.path.startsWith('/icons/') || 
+                       req.path.startsWith('/images/');
+  
+  // Public paths don't need authentication
+  if (isLoginPage || isLoginApi || isLogoutApi || isTestRoute || isStaticAsset) {
+    return next();
+  }
+  
+  // Check for authentication for all other paths
+  if (!token) {
+    console.log('Redirecting to login.html');
+    return res.redirect('/login.html');
+  } else if (token && isLoginPage) {
+    console.log('Redirecting to main app');
+    return res.redirect('/');
+  }
+  
+  next();
+});
 
+// NOW add the history middleware with special treatment for login.html
+app.use(history({
+  rewrites: [
+    {
+      from: /^\/login\.html$/,
+      to: '/login.html'
+    }
+  ],
+  // Disable history API fallback for some paths
+  historyApiFallback: function(req, res, next) {
+    if (req.path === '/login.html' || 
+        req.path === '/api/login' || 
+        req.path === '/api/logout' ||
+        req.path === '/test') {
+      next();
+    } else {
+      history()(req, res, next);
+    }
+  }
+}));
+
+// Static files come AFTER history middleware
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-
-
 // Start server
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use. Try a different port.`);
+    process.exit(1);
+  } else {
+    console.error('Server error:', err);
+  }
 });
