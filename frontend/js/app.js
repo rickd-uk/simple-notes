@@ -51,7 +51,7 @@ async function loadCategories() {
   }
 }
 
-// Render notes
+
 function renderNotes() {
   if (notes.length === 0) {
     notesContainer.innerHTML = `
@@ -84,6 +84,9 @@ function renderNotes() {
           <div class="note-timestamp">${formattedDate}</div>
           <button class="note-delete" title="Delete note">🗑️</button>
         </div>
+        <div class="note-expand" title="Expand/collapse note">
+          <span class="expand-icon">⤢</span>
+        </div>
       `;
       
       notesContainer.appendChild(noteElement);
@@ -91,6 +94,7 @@ function renderNotes() {
       // Add event listeners to the note
       const textArea = noteElement.querySelector('.note-content');
       const deleteBtn = noteElement.querySelector('.note-delete');
+      const expandBtn = noteElement.querySelector('.note-expand');
       
       textArea.addEventListener('input', (e) => {
         updateNote(note.id, e.target.value);
@@ -100,7 +104,61 @@ function renderNotes() {
         e.stopPropagation();
         deleteNote(note.id);
       });
+      
+      // Add expand/collapse functionality
+      expandBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleNoteExpansion(noteElement);
+      });
     });
+  }
+}
+
+function toggleNoteExpansion(noteElement) {
+  // Create overlay if it doesn't exist yet
+  let overlay = document.querySelector('.note-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'note-overlay';
+    document.body.appendChild(overlay);
+    
+    // Add click event to close expanded note when clicking outside
+    overlay.addEventListener('click', () => {
+      const expandedNote = document.querySelector('.note.expanded');
+      if (expandedNote) {
+        toggleNoteExpansion(expandedNote);
+      }
+    });
+  }
+  
+  if (noteElement.classList.contains('expanded')) {
+    // Collapse note
+    noteElement.classList.remove('expanded');
+    overlay.classList.remove('active');
+    
+    // Return note to its original container
+    notesContainer.appendChild(noteElement);
+    
+    // Allow scrolling on main container again
+    document.body.style.overflow = '';
+  } else {
+    // Expand note
+    noteElement.classList.add('expanded');
+    overlay.classList.add('active');
+    
+    // Move to body to ensure proper positioning and z-index
+    document.body.appendChild(noteElement);
+    
+    // Prevent scrolling on main container
+    document.body.style.overflow = 'hidden';
+    
+    // Focus on textarea
+    const textarea = noteElement.querySelector('.note-content');
+    textarea.focus();
+    
+    // Place cursor at the end of the text
+    const textLength = textarea.value.length;
+    textarea.setSelectionRange(textLength, textLength);
   }
 }
 
@@ -482,7 +540,19 @@ document.addEventListener('DOMContentLoaded', () => {
       hideCategoryModal();
     }
   });
-  
+ 
+  // Add this new Escape key handler for expanded notes
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const expandedNote = document.querySelector('.note.expanded');
+      if (expandedNote) {
+        toggleNoteExpansion(expandedNote);
+        e.preventDefault(); // Prevent other escape key handlers
+      }
+    }
+  });
+
+
   // Initialize the app
   loadCategories().then(() => loadNotes());
 });
