@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Notes</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="app-title">Simple Notes</div>
+        <div class="categories">
+            <div class="category active" data-id="all">
+                <div class="category-icon">📄</div>
+                <div class="category-name">All Notes</div>
+            </div>
+            <div class="category" data-id="uncategorized">
+                <div class="category-icon">📌</div>
+                <div class="category-name">Uncategorized</div>
+            </div>
+            <!-- Custom categories will be added here -->
+        </div>
+        <div class="add-category">
+            <button class="add-category-btn" id="addCategoryBtn">+ Add Category</button>
+        </div>
+    </div>
+    
+    <div class="main">
+        <div class="notes-header">
+            <div class="current-category">All Notes</div>
+            <button class="add-note-btn" id="addNoteBtn">+</button>
+        </div>
+        <div class="notes-container" id="notesContainer">
+            <!-- Notes will be added here -->
+            <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <div class="empty-message">No notes yet</div>
+                <button class="empty-action" id="emptyAddNoteBtn">Create your first note</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Category Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <div class="modal-header" id="categoryModalHeader">Add New Category</div>
+            <input type="text" class="modal-input" id="categoryInput" placeholder="Category name">
+            <div class="icon-selector">
+                <div class="icon-selector-label">Select an icon:</div>
+                <div class="icon-grid" id="iconGrid">
+                    <div class="icon-item selected" data-icon="📁">📁</div>
+                    <div class="icon-item" data-icon="📝">📝</div>
+                    <div class="icon-item" data-icon="📌">📌</div>
+                    <div class="icon-item" data-icon="💼">💼</div>
+                    <div class="icon-item" data-icon="🏠">🏠</div>
+                    <div class="icon-item" data-icon="🔖">🔖</div>
+                    <div class="icon-item" data-icon="📚">📚</div>
+                    <div class="icon-item" data-icon="💡">💡</div>
+                    <div class="icon-item" data-icon="🎓">🎓</div>
+                    <div class="icon-item" data-icon="🎯">🎯</div>
+                    <div class="icon-item" data-icon="📊">📊</div>
+                    <div class="icon-item" data-icon="📅">📅</div>
+                    <div class="icon-item" data-icon="❤️">❤️</div>
+                    <div class="icon-item" data-icon="🍎">🍎</div>
+                    <div class="icon-item" data-icon="🚗">🚗</div>
+                    <div class="icon-item" data-icon="✈️">✈️</div>
+                </div>
+            </div>
+            <input type="hidden" id="categoryIconInput" value="📁">
+            <input type="hidden" id="categoryEditId">
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancelCategoryBtn">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="confirmCategoryBtn">Add</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
