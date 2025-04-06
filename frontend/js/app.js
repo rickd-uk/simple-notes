@@ -20,6 +20,27 @@ const confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
 const categoryEditId = document.getElementById('categoryEditId');
 const toast = document.getElementById('toast');
 
+// Cache management
+function saveCategoriesToCache(categories) {
+  localStorage.setItem('categories', JSON.stringify(categories));
+  localStorage.setItem('categoriesCachedAt', Date.now().toString());
+}
+
+function getCachedCategories() {
+  const cachedCategories = localStorage.getItem('categories');
+  if (!cachedCategories) return null;
+  
+  // Optionally check cache freshness (24-hour expiry)
+  const cachedAt = localStorage.getItem('categoriesCachedAt');
+  if (cachedAt && Date.now() - Number(cachedAt) > 24 * 60 * 60 * 1000) {
+    localStorage.removeItem('categories');
+    localStorage.removeItem('categoriesCachedAt');
+    return null;
+  }
+  
+  return JSON.parse(cachedCategories);
+}
+
 // Fetch notes from API
 async function loadNotes() {
   try {
@@ -40,14 +61,52 @@ async function loadNotes() {
 
 // Fetch categories from API
 async function loadCategories() {
+  // First try to render from cache for immediate display
+  const cachedCategories = getCachedCategories();
+  if (cachedCategories) {
+    categories = cachedCategories;
+    renderCategories();
+  }
+
+
+  // Show loading indicator for empty categories
+  if (!cachedCategories) {
+    categoriesContainer.innerHTML = `
+      <div class="category${currentCategoryId === 'all' ? ' active' : ''}" data-id="all">
+        <div class="category-icon">📄</div>
+        <div class="category-name">All Notes</div>
+      </div>
+      <div class="category${currentCategoryId === 'uncategorized' ? ' active' : ''}" data-id="uncategorized">
+        <div class="category-icon">📌</div>
+        <div class="category-name">Uncategorized</div>
+      </div>
+      <div class="category" data-id="loading">
+        <div class="category-icon">⏳</div>
+        <div class="category-name">Loading categories...</div>
+      </div>
+    `;
+  }
+
   try {
     const response = await fetch(`${apiUrl}/categories`);
     if (!response.ok) throw new Error('Failed to fetch categories');
-    categories = await response.json();
-    renderCategories();
+    const freshCategories = await response.json();
+
+    // Only update UI if categories changed or we didn't have cache
+    if (!cachedCategories || JSON.stringify(freshCategories) !== JSON.stringify(cachedCategories)) {
+      categories = freshCategories;
+      renderCategories();
+    }
+    // Update the cache with fresh data
+    saveCategoriesToCache(freshCategories);
+
   } catch (error) {
     console.error('Error loading categories:', error);
-    showToast('Error loading categories');
+
+    // If we have cached categories, continue using them
+    if (!cachedCategories) {
+      showToast('Error loading categories');
+    }
   }
 }
 
