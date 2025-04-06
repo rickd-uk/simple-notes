@@ -413,3 +413,25 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+
+
+.frontpage-image {
+  text-align: center;
+  margin-left: 10px;
+  margin-right: 15px;
+
+  margin-bottom: 20px;
+}
+
+.frontpage-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.fallback-text {
+  font-size: 24px;
+  color: #6200ee; /* Use your primary color or any color you like */
+  padding: 20px;
+}
+
