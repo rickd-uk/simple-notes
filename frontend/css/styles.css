@@ -508,3 +508,26 @@ body {
     color: #6200ee; /* Use your primary color or any color you like */
     padding: 20px;
 }
+
+
+.sidebar-footer {
+  padding: 10px 20px;
+  margin-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px 0;
+  background-color: transparent;
+  color: #f44336;
+  border: 1px solid #f44336;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  background-color: rgba(244, 67, 54, 0.05);
+}
