@@ -9,6 +9,12 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD
 });
 
+// Error handling for pool errors
+pool.on('error', (err) => {
+  console.error('Unexpected database pool error', err);
+  // Don't crash the server on connection errors
+});
+
 // Test connection
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
@@ -19,5 +25,12 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 
 module.exports = {
-  query: (text, params) => pool.query(text, params)
+  query: async (text, params) => {
+    try {
+      return await pool.query(text, params);
+    } catch (err) {
+      console.error('Database query error:', err);
+      throw err; // Rethrow so the API can respond with an error
+    }
+  }
 };
