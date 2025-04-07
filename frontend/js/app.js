@@ -371,8 +371,24 @@ async function deleteNote(id) {
     });
     
     if (!response.ok) throw new Error('Failed to delete note');
-    
+   
+    // Check if deleted note was expanded 
+    const expandedNote = document.querySelector('.note.expanded')
+    if (expandedNote && expandedNote.dataset.id == id) {
+      // remove expanded note from DOM 
+      expandedNote.remove();
+
+      // also remove the overlay 
+      const overlay = document.querySelector('.note-overlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+
+      // restore body scrolling 
+      document.body.style.overflow = '';
+    } 
     notes = notes.filter(note => note.id != id);
+
     renderNotes();
     showToast('Note deleted');
   } catch (error) {
