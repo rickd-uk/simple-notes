@@ -387,8 +387,8 @@ async function deleteNote(id) {
       // restore body scrolling 
       document.body.style.overflow = '';
     } 
+    
     notes = notes.filter(note => note.id != id);
-
     renderNotes();
     showToast('Note deleted');
   } catch (error) {
