@@ -57,9 +57,11 @@
         <div class="login-form">
             <h1 class="login-title">Simple Notes</h1>
             <div class="login-error" id="loginError">Invalid username or password</div>
-            <input type="text" id="username" class="login-input" placeholder="Username" autocomplete="username">
-            <input type="password" id="password" class="login-input" placeholder="Password" autocomplete="current-password">
-            <button id="loginBtn" class="login-btn">Login</button>
+            <form id="loginForm" onsubmit="return false;">
+                <input type="text" id="username" class="login-input" placeholder="Username" autocomplete="username">
+                <input type="password" id="password" class="login-input" placeholder="Password" autocomplete="current-password">
+                <button type="button" id="loginBtn" class="login-btn">Login</button>
+            </form>
         </div>
     </div>
 
@@ -70,24 +72,12 @@
             const passwordInput = document.getElementById('password');
             const loginError = document.getElementById('loginError');
             
-            // Check if already authenticated
-            const checkAuth = async () => {
-                try {
-                    const response = await fetch('/api/notes');
-                    if (response.ok) {
-                        // Already authenticated
-                        window.location.href = '/';
-                    }
-                } catch (error) {
-                    // Not authenticated, continue showing login
-                    console.log('Not authenticated');
-                }
-            };
-            
             // Try to login
             const login = async () => {
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value;
+
+                console.log('Attempting login with:', { username, password });
                 
                 if (!username || !password) {
                     loginError.style.display = 'block';
@@ -95,13 +85,24 @@
                 }
                 
                 try {
+                    console.log('Sending request to /api/login with:', { username, password });
                     const response = await fetch('/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
                     
+                    console.log('Login response status:', response.status);
+                   
+                    try {
+                      const data = await response.json();
+                      console.log('Response data:', data);
+                    } catch (e) {
+                      console.log('Could not parse response as JSON');
+                    }
+
                     if (response.ok) {
+                        console.log('Login successful, redirecting...');
                         window.location.href = '/';
                     } else {
                         loginError.style.display = 'block';
@@ -121,9 +122,6 @@
                     login();
                 }
             });
-            
-            // Check if already authenticated
-            checkAuth();
         });
     </script>
 </body>
