@@ -737,6 +737,18 @@ document.addEventListener('DOMContentLoaded', () => {
       categoryIconInput.value = iconItem.dataset.icon;
     });
   });
+
+
+  categoryInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // Prevent form submission if inside a form
+    if (categoryEditId.value) {
+      updateCategory();
+    } else {
+      createCategory();
+    }
+  }
+  });
   
   // Category modal buttons
   cancelCategoryBtn.addEventListener('click', hideCategoryModal);
@@ -773,6 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+
 
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
