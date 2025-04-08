@@ -20,7 +20,7 @@ const confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
 const categoryEditId = document.getElementById('categoryEditId');
 const toast = document.getElementById('toast');
 
-// Cache management
+// Cache management for categories
 function saveCategoriesToCache(categories) {
   localStorage.setItem('categories', JSON.stringify(categories));
   localStorage.setItem('categoriesCachedAt', Date.now().toString());
@@ -41,8 +41,58 @@ function getCachedCategories() {
   return JSON.parse(cachedCategories);
 }
 
-// Fetch notes from API
+// Cache management for notes
+function saveNotesToCache(categoryId, notesData) {
+  localStorage.setItem(`notes_${categoryId}`, JSON.stringify(notesData));
+  localStorage.setItem(`notes_${categoryId}_cachedAt`, Date.now().toString());
+}
+
+function getCachedNotes(categoryId) {
+  const cachedNotes = localStorage.getItem(`notes_${categoryId}`);
+  if (!cachedNotes) return null;
+  
+  // Cache expiry (1 hour for notes)
+  const cachedAt = localStorage.getItem(`notes_${categoryId}_cachedAt`);
+  if (cachedAt && Date.now() - Number(cachedAt) > 60 * 60 * 1000) { // 1 hour
+    localStorage.removeItem(`notes_${categoryId}`);
+    localStorage.removeItem(`notes_${categoryId}_cachedAt`);
+    return null;
+  }
+  
+  return JSON.parse(cachedNotes);
+}
+
+// Clear note cache for a specific category (used when notes are modified)
+function clearNotesCache(categoryId) {
+  localStorage.removeItem(`notes_${categoryId}`);
+  localStorage.removeItem(`notes_${categoryId}_cachedAt`);
+  
+  // Also clear 'all' category cache since it contains all notes
+  if (categoryId !== 'all') {
+    localStorage.removeItem('notes_all');
+    localStorage.removeItem('notes_all_cachedAt');
+  }
+}
+
+// Fetch notes from API with caching
 async function loadNotes() {
+  // First try to render from cache for immediate display
+  const cachedNotes = getCachedNotes(currentCategoryId);
+  if (cachedNotes) {
+    notes = cachedNotes;
+    renderNotes();
+  }
+
+  // Show loading indicator if no cached data
+  if (!cachedNotes) {
+    notesContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-message">Loading notes...</div>
+      </div>
+    `;
+  }
+
   try {
     let url = `${apiUrl}/notes`;
     if (currentCategoryId !== 'all') {
@@ -51,15 +101,28 @@ async function loadNotes() {
     
     const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch notes');
-    notes = await response.json();
-    renderNotes();
+    const freshNotes = await response.json();
+    
+    // Only update UI if notes changed or we didn't have cache
+    if (!cachedNotes || JSON.stringify(freshNotes) !== JSON.stringify(cachedNotes)) {
+      notes = freshNotes;
+      renderNotes();
+    }
+    
+    // Update the cache with fresh data
+    saveNotesToCache(currentCategoryId, freshNotes);
+    
   } catch (error) {
     console.error('Error loading notes:', error);
-    showToast('Error loading notes');
+    
+    // If we have cached notes, continue using them
+    if (!cachedNotes) {
+      showToast('Error loading notes');
+    }
   }
 }
 
-// Fetch categories from API
+// Fetch categories from API with caching
 async function loadCategories() {
   // First try to render from cache for immediate display
   const cachedCategories = getCachedCategories();
@@ -67,7 +130,6 @@ async function loadCategories() {
     categories = cachedCategories;
     renderCategories();
   }
-
 
   // Show loading indicator for empty categories
   if (!cachedCategories) {
@@ -110,6 +172,46 @@ async function loadCategories() {
   }
 }
 
+// Preload notes for adjacent categories in the background
+function preloadAdjacentCategories() {
+  // Create an array of all category IDs including system categories
+  const allCategoryIds = ['all', 'uncategorized', ...categories.map(c => c.id.toString())];
+  const currentIndex = allCategoryIds.indexOf(currentCategoryId);
+  
+  // Preload next and previous categories
+  if (currentIndex > 0) {
+    prefetchNotes(allCategoryIds[currentIndex - 1]);
+  }
+  if (currentIndex < allCategoryIds.length - 1) {
+    prefetchNotes(allCategoryIds[currentIndex + 1]);
+  }
+}
+
+// Prefetch notes for a category without rendering them
+async function prefetchNotes(categoryId) {
+  // Skip if we already have fresh cached data
+  const cachedAt = localStorage.getItem(`notes_${categoryId}_cachedAt`);
+  if (cachedAt && Date.now() - Number(cachedAt) < 5 * 60 * 1000) { // 5 minutes
+    return; // Use existing cache if it's less than 5 minutes old
+  }
+
+  try {
+    let url = `${apiUrl}/notes`;
+    if (categoryId !== 'all') {
+      url = `${apiUrl}/notes/category/${categoryId}`;
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to prefetch notes');
+    const prefetchedNotes = await response.json();
+    
+    // Only update the cache
+    saveNotesToCache(categoryId, prefetchedNotes);
+  } catch (error) {
+    console.error(`Error prefetching notes for category ${categoryId}:`, error);
+    // Silently fail for prefetching
+  }
+}
 
 function renderNotes() {
   if (notes.length === 0) {
@@ -122,7 +224,8 @@ function renderNotes() {
     `;
     document.getElementById('emptyAddNoteBtn').addEventListener('click', createNewNote);
   } else {
-    notesContainer.innerHTML = '';
+    // Use DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
     
     notes.forEach(note => {
       const noteElement = document.createElement('div');
@@ -148,23 +251,29 @@ function renderNotes() {
         </div>
       `;
       
-      notesContainer.appendChild(noteElement);
-      
-      // Add event listeners to the note
+      fragment.appendChild(noteElement);
+    });
+    
+    // Clear and append in a single operation
+    notesContainer.innerHTML = '';
+    notesContainer.appendChild(fragment);
+    
+    // Add event listeners to notes
+    document.querySelectorAll('.note').forEach(noteElement => {
+      const noteId = noteElement.dataset.id;
       const textArea = noteElement.querySelector('.note-content');
       const deleteBtn = noteElement.querySelector('.note-delete');
       const expandBtn = noteElement.querySelector('.note-expand');
       
       textArea.addEventListener('input', (e) => {
-        updateNote(note.id, e.target.value);
+        updateNote(noteId, e.target.value);
       });
       
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteNote(note.id);
+        deleteNote(noteId);
       });
       
-      // Add expand/collapse functionality
       expandBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         toggleNoteExpansion(noteElement);
@@ -262,11 +371,19 @@ function renderCategories() {
   // Add event listeners to categories
   document.querySelectorAll('.category').forEach(categoryElem => {
     categoryElem.addEventListener('click', () => {
-      currentCategoryId = categoryElem.dataset.id;
+      const newCategoryId = categoryElem.dataset.id;
+      if (newCategoryId === currentCategoryId) return; // Skip if already active
+      
+      currentCategoryId = newCategoryId;
       document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
       categoryElem.classList.add('active');
       loadNotes();
       renderCategories(); // Update header
+      
+      // Preload adjacent categories after a short delay
+      setTimeout(() => {
+        preloadAdjacentCategories();
+      }, 1000);
     });
     
     const editBtn = categoryElem.querySelector('.btn-edit');
@@ -307,8 +424,15 @@ async function createNewNote() {
     if (!response.ok) throw new Error('Failed to create note');
     const createdNote = await response.json();
     
+    // Update local state
     notes.unshift(createdNote);
     renderNotes();
+    
+    // Clear cache for current category and 'all' category
+    clearNotesCache(currentCategoryId);
+    if (currentCategoryId !== 'all') {
+      clearNotesCache('all');
+    }
     
     // Focus on the new note
     setTimeout(() => {
@@ -349,6 +473,13 @@ async function updateNote(id, content) {
         
         // Update the note in the array with the result from the server
         Object.assign(notes[noteIndex], result);
+        
+        // Update cache for current category and 'all' category
+        saveNotesToCache(currentCategoryId, notes);
+        if (currentCategoryId !== 'all') {
+          // We don't have the full 'all' notes array, so just clear that cache
+          clearNotesCache('all');
+        }
       } catch (err) {
         console.error('Error saving note:', err);
         showToast('Error saving note');
@@ -387,8 +518,14 @@ async function deleteNote(id) {
       // restore body scrolling 
       document.body.style.overflow = '';
     } 
-    
     notes = notes.filter(note => note.id != id);
+
+    // Clear cache for current category and 'all' category
+    clearNotesCache(currentCategoryId);
+    if (currentCategoryId !== 'all') {
+      clearNotesCache('all');
+    }
+
     renderNotes();
     showToast('Note deleted');
   } catch (error) {
@@ -470,6 +607,7 @@ async function createCategory() {
     
     const newCategory = await response.json();
     categories.push(newCategory);
+    saveCategoriesToCache(categories);
     renderCategories();
     hideCategoryModal();
     showToast('Category added');
@@ -518,6 +656,7 @@ async function updateCategory() {
     
     if (categoryIndex !== -1) {
       categories[categoryIndex] = updatedCategory;
+      saveCategoriesToCache(categories);
       renderCategories();
       hideCategoryModal();
       showToast('Category updated');
@@ -539,6 +678,14 @@ async function deleteCategory(id) {
       if (!response.ok) throw new Error('Failed to delete category');
       
       categories = categories.filter(cat => cat.id.toString() !== id);
+      saveCategoriesToCache(categories);
+      
+      // Clear all notes caches since category assignments changed
+      clearNotesCache('all');
+      clearNotesCache('uncategorized');
+      categories.forEach(cat => {
+        clearNotesCache(cat.id.toString());
+      });
       
       // If current category is being deleted, switch to all notes
       if (currentCategoryId === id) {
@@ -627,19 +774,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-
   const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        try {
-          await fetch('/api/logout', { method: 'POST' });
-          window.location.href = '/login.html';
-        } catch (error) {
-          console.error('Logout error:', error);
-        }
-      });
-    }
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    });
+  }
 
   // Initialize the app
-  loadCategories().then(() => loadNotes());
+  loadCategories().then(() => {
+    loadNotes();
+    // Preload adjacent categories after initial load
+    setTimeout(() => {
+      preloadAdjacentCategories();
+    }, 2000);
+  });
 });
