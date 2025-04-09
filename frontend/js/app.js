@@ -809,3 +809,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   });
 });
+
+
+// Add this code to your existing app.js, preferably at the end of the 
+// DOMContentLoaded event listener
+
+// Mobile navigation functionality
+function setupMobileNavigation() {
+  // Create and append nav toggle button
+  const navToggle = document.createElement('button');
+  navToggle.className = 'nav-toggle';
+  navToggle.innerHTML = '≡';
+  navToggle.setAttribute('aria-label', 'Toggle sidebar');
+  document.body.appendChild(navToggle);
+  
+  // Create sidebar overlay
+  const sidebarOverlay = document.createElement('div');
+  sidebarOverlay.className = 'sidebar-overlay';
+  document.body.appendChild(sidebarOverlay);
+  
+  // Get sidebar element
+  const sidebar = document.querySelector('.sidebar');
+  
+  // Toggle sidebar function
+  function toggleSidebar() {
+    sidebar.classList.toggle('active');
+    sidebarOverlay.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+  }
+  
+  // Event listeners
+  navToggle.addEventListener('click', toggleSidebar);
+  sidebarOverlay.addEventListener('click', toggleSidebar);
+  
+  // Close sidebar when a category is selected on mobile
+  if (window.innerWidth <= 768) {
+    document.querySelectorAll('.category').forEach(cat => {
+      cat.addEventListener('click', () => {
+        setTimeout(() => {
+          toggleSidebar();
+        }, 100);
+      });
+    });
+  }
+  
+  // Resize handler to reset sidebar state on screen size change
+  let previousWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    const currentWidth = window.innerWidth;
+    
+    // Check if we've crossed the mobile breakpoint
+    if ((previousWidth <= 768 && currentWidth > 768) || 
+        (previousWidth > 768 && currentWidth <= 768)) {
+      // Reset sidebar state
+      sidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    previousWidth = currentWidth;
+  });
+}
+
+// Call the function to set up mobile navigation
+setupMobileNavigation();
+
+// Fix for buttons being added multiple times when switching categories
+document.querySelectorAll('.category').forEach(cat => {
+  cat.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      const emptyAddNoteBtn = document.getElementById('emptyAddNoteBtn');
+      if (emptyAddNoteBtn) {
+        // Ensure we only have one event listener
+        const newBtn = emptyAddNoteBtn.cloneNode(true);
+        emptyAddNoteBtn.parentNode.replaceChild(newBtn, emptyAddNoteBtn);
+        newBtn.addEventListener('click', createNewNote);
+      }
+    }
+  });
+});
