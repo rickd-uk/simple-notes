@@ -30,6 +30,28 @@
         width: 100%;
         margin-left: 0;
     }
+
+     /* Makes sure Title is centered & burger bar on left */
+    .notes-header {
+        position: relative;
+        justify-content: space-between;
+    }
+    
+    .current-category {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 1;
+        pointer-events: none; /* So clicks pass through to elements below if needed */
+    }
+    
+    .add-note-btn {
+        position: relative;
+        z-index: 2;
+        margin-left: auto; /* Ensures it stays on the right */
+    }
+    /* End of new rules */
     
     .notes-container {
         grid-template-columns: 1fr;
