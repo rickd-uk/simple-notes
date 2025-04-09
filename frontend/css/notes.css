@@ -1,0 +1,142 @@
+/* notes.css - Styles for note cards and expanded notes */
+
+.note {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    min-height: 150px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+    cursor: pointer;
+}
+
+.note:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.note-content {
+    flex-grow: 1;
+    resize: none;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100px;
+}
+
+.note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #757575;
+}
+
+.note-timestamp {
+    flex-grow: 1;
+}
+
+/* Delete button - positioned at top-right corner */
+.note-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0;
+    background: none;
+    border: none;
+    color: #f44336;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s, opacity 0.2s;
+    z-index: 3;
+}
+
+.note:hover .note-delete {
+    opacity: 0.7;
+}
+
+.note-delete:hover {
+    opacity: 1 !important;
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Expand button - positioned at bottom-right corner */
+.note-expand {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+    background-color: var(--background-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.note:hover .note-expand {
+    opacity: 0.7;
+}
+
+.note-expand:hover {
+    opacity: 1 !important;
+    background-color: rgba(98, 0, 238, 0.1);
+}
+
+/* Expanded note styling */
+.note.expanded {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 800px;
+    height: 70%;
+    max-height: 600px;
+    z-index: 1001;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.note.expanded .note-content {
+    min-height: calc(100% - 50px);
+    font-size: 16px;
+}
+
+.note.expanded .note-expand .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Background overlay when note is expanded */
+.note-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.note-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
