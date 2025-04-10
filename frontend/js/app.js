@@ -379,6 +379,15 @@ function renderCategories() {
       categoryElem.classList.add('active');
       loadNotes();
       renderCategories(); // Update header
+
+      if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.querySelector('.sidebar-overlay');
+
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
       
       // Preload adjacent categories after a short delay
       setTimeout(() => {
