@@ -380,6 +380,30 @@ function renderCategories() {
       currentCategoryElement.textContent = category.name;
     }
   }
+
+  // Add bulk delete button to notes header if not already present
+  const notesHeader = document.querySelector('.notes-header');
+  let bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  
+  if (!bulkDeleteBtn) {
+    bulkDeleteBtn = document.createElement('button');
+    bulkDeleteBtn.id = 'bulkDeleteBtn';
+    bulkDeleteBtn.className = 'bulk-delete-btn';
+    bulkDeleteBtn.title = 'Delete all notes in this category';
+    bulkDeleteBtn.innerHTML = '🗑️ Delete All';
+    
+    // On mobile, ensure proper button placement
+    if (window.innerWidth <= 768) {
+      // Insert at the beginning of the header (left side)
+      notesHeader.insertBefore(bulkDeleteBtn, notesHeader.firstChild);
+    } else {
+      // On desktop, add button between the category title and add note button
+      notesHeader.insertBefore(bulkDeleteBtn, document.getElementById('addNoteBtn'));
+    }
+    
+    // Add event listener to bulk delete button
+    bulkDeleteBtn.addEventListener('click', deleteAllNotesInCategory);
+  }
   
   // Add event listeners to categories
   document.querySelectorAll('.category').forEach(categoryElem => {
@@ -553,6 +577,78 @@ async function deleteNote(id) {
   } catch (error) {
     console.error('Error deleting note:', error);
     showToast('Error deleting note');
+  }
+}
+
+// Function to delete all notes in a category
+async function deleteAllNotesInCategory() {
+  const url = `${apiUrl}/notes/category/${currentCategoryId}`;
+  console.log('Attempting bulk delete at URL:', url);
+
+  const categoryName = currentCategoryId === 'all' 
+    ? 'All Notes' 
+    : currentCategoryId === 'uncategorized' 
+      ? 'Uncategorized' 
+      : categories.find(cat => cat.id.toString() === currentCategoryId)?.name || 'this category';
+  
+  if (confirm(`Are you sure you want to delete ALL notes in "${categoryName}"? This action cannot be undone.`)) {
+    try {
+      // If there are no notes, show message and return
+      if (notes.length === 0) {
+        showToast('No notes to delete');
+        return;
+      }
+      
+      // Show loading message
+      showToast('Deleting notes...');
+      
+      // Call the bulk delete endpoint
+      const response = await fetch(`${apiUrl}/notes/category/${currentCategoryId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete notes');
+      
+      const result = await response.json();
+      
+      // Clear notes array
+      notes = [];
+      
+      // Clear cache for current category and 'all' category
+      clearNotesCache(currentCategoryId);
+      if (currentCategoryId !== 'all') {
+        clearNotesCache('all');
+      }
+      
+      // Check if any notes were expanded
+      const expandedNote = document.querySelector('.note.expanded');
+      if (expandedNote) {
+        // Remove expanded note from DOM
+        expandedNote.remove();
+        
+        // Also remove the overlay
+        const overlay = document.querySelector('.note-overlay');
+        if (overlay) {
+          overlay.classList.remove('active');
+        }
+        
+        // Restore body scrolling
+        document.body.style.overflow = '';
+      }
+      
+      // Render empty notes container
+      renderNotes();
+      
+      // Show success message with count if available
+      if (result.count !== undefined) {
+        showToast(`Deleted ${result.count} notes from "${categoryName}"`);
+      } else {
+        showToast(`All notes in "${categoryName}" deleted`);
+      }
+    } catch (error) {
+      console.error('Error deleting all notes:', error);
+      showToast('Error deleting notes');
+    }
   }
 }
 
@@ -760,16 +856,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-
   categoryInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault(); // Prevent form submission if inside a form
-    if (categoryEditId.value) {
-      updateCategory();
-    } else {
-      createCategory();
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission if inside a form
+      if (categoryEditId.value) {
+        updateCategory();
+      } else {
+        createCategory();
+      }
     }
-  }
   });
   
   // Category modal buttons
@@ -808,8 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-
-
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
@@ -829,6 +922,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       preloadAdjacentCategories();
     }, 2000);
+  });
+  
+  // Handle proper button placement when window is resized
+  window.addEventListener('resize', function() {
+    const notesHeader = document.querySelector('.notes-header');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    
+    if (bulkDeleteBtn && notesHeader && addNoteBtn) {
+      if (window.innerWidth <= 768) {
+        // Move to left side on mobile
+        notesHeader.insertBefore(bulkDeleteBtn, notesHeader.firstChild);
+      } else {
+        // Move between title and add button on desktop
+        notesHeader.insertBefore(bulkDeleteBtn, addNoteBtn);
+      }
+    }
   });
 });
 
@@ -909,4 +1019,4 @@ document.querySelectorAll('.category').forEach(cat => {
       }
     }
   });
-});
+});  

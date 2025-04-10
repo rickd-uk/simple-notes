@@ -19,8 +19,23 @@ process.on('unhandledRejection', (reason, promise) => {
   // Keep the server running despite the error
 });
 
+
+
+
+
 const app = express();
 const port = process.env.PORT || 3012;
+
+// In the backend, at the top of your app.js file
+app.use((req, res, next) => {
+  console.log('Request URL:', req.method, req.url);
+  next();
+});
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} - Params:`, req.params);
+  next();
+});
 
 // Middleware
 app.use(cors());
@@ -112,6 +127,8 @@ app.use('/api/notes', authenticate);
 app.use('/api/categories', authenticate);
 
 // Protected API Routes for notes
+
+// Get all notes
 app.get('/api/notes', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM notes ORDER BY updated_at DESC');
@@ -122,6 +139,7 @@ app.get('/api/notes', async (req, res) => {
   }
 });
 
+// Get notes by category - KEEP THIS FIRST
 app.get('/api/notes/category/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,6 +166,42 @@ app.get('/api/notes/category/:id', async (req, res) => {
   }
 });
 
+console.log("Registering bulk delete route: DELETE /api/notes/category/:id");
+
+
+
+// Bulk delete notes by category - THIS MUST COME BEFORE THE INDIVIDUAL DELETE ROUTE
+app.delete('/api/notes/category/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let query;
+    let params;
+    let message;
+    
+    if (id === 'uncategorized') {
+      query = 'DELETE FROM notes WHERE category_id IS NULL';
+      params = [];
+      message = 'All uncategorized notes deleted';
+    } else if (id === 'all') {
+      query = 'DELETE FROM notes';
+      params = [];
+      message = 'All notes deleted';
+    } else {
+      query = 'DELETE FROM notes WHERE category_id = $1';
+      params = [id];
+      message = 'All notes in this category deleted';
+    }
+    
+    const result = await db.query(query, params);
+    console.log(`Bulk deleted ${result.rowCount} notes from category: ${id}`);
+    res.json({ message, count: result.rowCount });
+  } catch (err) {
+    console.error('Error in bulk delete:', err);
+    res.status(500).json({ error: 'Server error during bulk delete operation' });
+  }
+});
+
+// Create a note
 app.post('/api/notes', async (req, res) => {
   try {
     const { content, category_id } = req.body;
@@ -162,6 +216,7 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 
+// Update a note
 app.put('/api/notes/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -177,6 +232,9 @@ app.put('/api/notes/:id', async (req, res) => {
   }
 });
 
+console.log("Registering individual delete route: DELETE /api/notes/:id");
+
+// Delete individual note - THIS MUST COME AFTER THE BULK DELETE ROUTE
 app.delete('/api/notes/:id', async (req, res) => {
   try {
     const { id } = req.params;
