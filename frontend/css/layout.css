@@ -69,6 +69,74 @@
     align-content: start;
 }
 
+/* Dynamic note sizing for larger displays */
+@media (min-width: 769px) {
+  /* For a single note - much wider */
+  .notes-container.notes-count-1 {
+    grid-template-columns: minmax(600px, 95%);
+    justify-content: center;
+  }
+  
+  .notes-container.notes-count-1 .note {
+    min-height: 350px; /* Taller as well */
+  }
+  
+  /* For 2-3 notes */
+  .notes-container.notes-count-2,
+  .notes-container.notes-count-3 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .notes-container.notes-count-2 .note,
+  .notes-container.notes-count-3 .note {
+    min-height: 300px; /* 2x default height */
+  }
+  
+  /* For very large screens, limit width to prevent extreme stretching */
+  @media (min-width: 1600px) {
+    .notes-container.notes-count-1 {
+      grid-template-columns: minmax(600px, 1200px);
+    }
+  }
+}
+
+/* Mobile specific sizing */
+@media (max-width: 768px) {
+  /* Always 1 note per row on mobile */
+  .notes-container {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* For a single note - use most of available height */
+  .notes-container.notes-count-1 .note {
+    min-height: 50vh;
+  }
+  
+  /* For 2 notes - divide height */
+  .notes-container.notes-count-2 .note {
+    min-height: 35vh;
+  }
+  
+  /* For 3+ notes - reasonable fixed height */
+  .notes-container.notes-count-3 .note,
+  .notes-container.notes-count-many .note {
+    min-height: 25vh;
+  }
+}
+
+/* Future size adjustment preparation */
+.notes-container.size-small .note {
+  min-height: 120px;
+}
+
+.notes-container.size-medium .note {
+  min-height: 180px;
+}
+
+.notes-container.size-large .note {
+  min-height: 240px;
+}
+
 /* Empty state */
 .empty-state {
     grid-column: 1 / -1;

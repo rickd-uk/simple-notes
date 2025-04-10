@@ -280,7 +280,20 @@ function renderNotes() {
       });
     });
   }
-}
+
+  const notesCount = notes.length;
+    notesContainer.classList.remove('notes-count-1', 'notes-count-2', 'notes-count-3', 'notes-count-many');
+
+    if (notesCount === 1) {
+      notesContainer.classList.add('notes-count-1');
+    } else if (notesCount === 2) {
+      notesContainer.classList.add('notes-count-2');
+    } else if (notesCount === 3) {
+      notesContainer.classList.add('notes-count-3');
+    } else if (notesCount > 3) {
+      notesContainer.classList.add('notes-count-many');
+    }
+  }
 
 function toggleNoteExpansion(noteElement) {
   // Create overlay if it doesn't exist yet
