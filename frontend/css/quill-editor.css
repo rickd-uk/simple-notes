@@ -1,4 +1,4 @@
-/* quill-editor.css - Styles for Quill editor integration */
+/* quill-editor.css - Improved toolbar layout */
 
 /* Container for the Quill editor */
 .note-editor-container {
@@ -17,16 +17,32 @@
     line-height: 1.5;
 }
 
-/* Toolbar styles to match the app's design */
+/* Toolbar styles with improved layout */
 .ql-toolbar.ql-snow {
     background-color: var(--background-color);
     border: none;
     border-bottom: 1px solid #e0e0e0;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
-    padding: 8px;
-    /* Adjust toolbar position to leave room for delete button */
+    padding: 5px;
     padding-right: 40px; /* Space for delete button */
-    margin-top: 0; /* Move back to top */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Make toolbar button groups more compact and flexible */
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right: 5px;
+    display: inline-flex;
+    flex-wrap: nowrap;
+}
+
+/* Ensure proper spacing between toolbar items */
+.ql-toolbar.ql-snow button {
+    padding: 3px;
+    height: 24px;
+    width: 24px;
 }
 
 /* Content area styles */
@@ -44,7 +60,12 @@
 
 .note.expanded .ql-container.ql-snow {
     font-size: 16px;
-    height: calc(100% - 65px); /* Give more space for expanded view */
+    height: calc(100% - 65px);
+}
+
+.note.expanded .ql-toolbar.ql-snow {
+    padding: 6px;
+    padding-right: 45px;
 }
 
 /* Hide toolbar on small notes until hover */
@@ -72,17 +93,12 @@
     cursor: pointer;
 }
 
-/* Make toolbar buttons more compact to fit in the available space */
-.ql-toolbar.ql-snow .ql-formats {
-    margin-right: 8px;
-}
-
 /* Mobile optimization */
 @media (max-width: 768px) {
-    /* Simplify toolbar on mobile */
+    /* Optimize toolbar layout for mobile */
     .ql-toolbar.ql-snow {
-        padding: 4px;
-        padding-right: 40px; /* Maintain space for delete button */
+        padding: 3px;
+        padding-right: 40px;
     }
     
     /* Always show toolbar on mobile for better UX */
@@ -90,13 +106,14 @@
         opacity: 1;
     }
     
-    /* Simplify toolbar on mobile */
-    .note:not(.expanded) .ql-formats {
-        margin-right: 5px;
+    /* Make toolbar buttons more compact on mobile */
+    .ql-toolbar.ql-snow .ql-formats {
+        margin-right: 3px;
     }
     
-    /* Make toolbar buttons smaller on mobile */
-    .ql-toolbar.ql-snow .ql-formats button {
+    .ql-toolbar.ql-snow button {
         padding: 2px;
+        height: 22px;
+        width: 22px;
     }
 }
