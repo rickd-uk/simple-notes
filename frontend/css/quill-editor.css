@@ -24,6 +24,9 @@
     border-bottom: 1px solid #e0e0e0;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     padding: 8px;
+    /* Adjust toolbar position to leave room for delete button */
+    padding-right: 40px; /* Space for delete button */
+    margin-top: 0; /* Move back to top */
 }
 
 /* Content area styles */
@@ -41,6 +44,7 @@
 
 .note.expanded .ql-container.ql-snow {
     font-size: 16px;
+    height: calc(100% - 65px); /* Give more space for expanded view */
 }
 
 /* Hide toolbar on small notes until hover */
@@ -68,11 +72,17 @@
     cursor: pointer;
 }
 
+/* Make toolbar buttons more compact to fit in the available space */
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right: 8px;
+}
+
 /* Mobile optimization */
 @media (max-width: 768px) {
     /* Simplify toolbar on mobile */
     .ql-toolbar.ql-snow {
         padding: 4px;
+        padding-right: 40px; /* Maintain space for delete button */
     }
     
     /* Always show toolbar on mobile for better UX */
@@ -83,5 +93,10 @@
     /* Simplify toolbar on mobile */
     .note:not(.expanded) .ql-formats {
         margin-right: 5px;
+    }
+    
+    /* Make toolbar buttons smaller on mobile */
+    .ql-toolbar.ql-snow .ql-formats button {
+        padding: 2px;
     }
 }

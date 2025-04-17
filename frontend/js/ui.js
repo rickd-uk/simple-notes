@@ -56,7 +56,8 @@ export function renderNotes() {
         minute: '2-digit'
       });
       
-      // Create placeholder for editor (will be replaced with Quill)
+      // Create placeholder with properly encoded content
+      // Make sure to properly sanitize and encode HTML content to prevent XSS
       noteElement.innerHTML = `
         <div class="note-content-placeholder" data-content="${encodeURIComponent(note.content || '')}"></div>
         <div class="note-footer">
@@ -66,8 +67,7 @@ export function renderNotes() {
         <div class="note-expand" title="Expand/collapse note">
           <span class="expand-icon">⤢</span>
         </div>
-      `;
-      
+      `;      
       fragment.appendChild(noteElement);
     });
     

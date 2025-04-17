@@ -64,38 +64,52 @@
     padding: 20px;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Increased minimum width */
     gap: 20px;
     align-content: start;
+    max-width: 1200px; /* This helps limit to 3 columns on wider screens */
+    margin: 0 auto; /* Center the grid */
 }
 
 /* Dynamic note sizing for larger displays */
 @media (min-width: 769px) {
   /* For a single note - much wider */
   .notes-container.notes-count-1 {
-    grid-template-columns: minmax(600px, 95%);
+    grid-template-columns: minmax(700px, 80%);
     justify-content: center;
   }
   
   .notes-container.notes-count-1 .note {
-    min-height: 350px; /* Taller as well */
+    min-height: 450px; /* Taller to accommodate Quill toolbar */
   }
   
   /* For 2-3 notes */
-  .notes-container.notes-count-2,
+  .notes-container.notes-count-2 {
+    grid-template-columns: repeat(2, 1fr); /* Force exactly 2 columns */
+  }
+  
   .notes-container.notes-count-3 {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* Force exactly 3 columns */
+  }
+  
+  /* For more than 3 notes, still keep max 3 columns */
+  .notes-container.notes-count-many {
+    grid-template-columns: repeat(3, 1fr);
   }
   
   .notes-container.notes-count-2 .note,
   .notes-container.notes-count-3 .note {
-    min-height: 300px; /* 2x default height */
+    min-height: 350px; /* Increased height */
   }
   
-  /* For very large screens, limit width to prevent extreme stretching */
+  /* For very large screens */
   @media (min-width: 1600px) {
+    .notes-container {
+      max-width: 1500px; /* Slightly wider on very large screens but still 3 columns */
+    }
+    
     .notes-container.notes-count-1 {
-      grid-template-columns: minmax(600px, 1200px);
+      grid-template-columns: minmax(700px, 1400px);
     }
   }
 }
@@ -105,36 +119,37 @@
   /* Always 1 note per row on mobile */
   .notes-container {
     grid-template-columns: 1fr !important;
+    max-width: 100%; /* Full width on mobile */
   }
   
   /* For a single note - use most of available height */
   .notes-container.notes-count-1 .note {
-    min-height: 50vh;
+    min-height: 60vh; /* Taller to accommodate Quill toolbar */
   }
   
   /* For 2 notes - divide height */
   .notes-container.notes-count-2 .note {
-    min-height: 35vh;
+    min-height: 40vh; /* Increased height */
   }
   
   /* For 3+ notes - reasonable fixed height */
   .notes-container.notes-count-3 .note,
   .notes-container.notes-count-many .note {
-    min-height: 25vh;
+    min-height: 30vh; /* Increased height */
   }
 }
 
 /* Future size adjustment preparation */
 .notes-container.size-small .note {
-  min-height: 120px;
+  min-height: 180px; /* Increased from 120px */
 }
 
 .notes-container.size-medium .note {
-  min-height: 180px;
+  min-height: 250px; /* Increased from 180px */
 }
 
 .notes-container.size-large .note {
-  min-height: 240px;
+  min-height: 350px; /* Increased from 240px */
 }
 
 /* Empty state */
