@@ -9,6 +9,7 @@ import {
   updateCategoryInState,
   removeCategoryFromState,
   setNotes,
+  getNotes, // Added this import to fix the error
   elements
 } from './state.js';
 import { 
@@ -271,7 +272,7 @@ export async function handleBulkDelete() {
   
   if (confirmed) {
     // If there are no notes, show message and return
-    if (getCategories().length === 0) {
+    if (getNotes().length === 0) {
       showToast('No notes to delete');
       return;
     }
