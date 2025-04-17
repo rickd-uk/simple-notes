@@ -1,0 +1,87 @@
+/* quill-editor.css - Styles for Quill editor integration */
+
+/* Container for the Quill editor */
+.note-editor-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make the editor fill the note card */
+.quill-editor {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: none;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Toolbar styles to match the app's design */
+.ql-toolbar.ql-snow {
+    background-color: var(--background-color);
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    padding: 8px;
+}
+
+/* Content area styles */
+.ql-container.ql-snow {
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    height: calc(100% - 42px); /* Adjust for toolbar height */
+}
+
+/* For expanded note - make editor taller */
+.note.expanded .quill-editor {
+    height: calc(100% - 50px);
+}
+
+.note.expanded .ql-container.ql-snow {
+    font-size: 16px;
+}
+
+/* Hide toolbar on small notes until hover */
+.note:not(.expanded) .ql-toolbar {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.note:not(.expanded):hover .ql-toolbar {
+    opacity: 1;
+}
+
+/* Editor placeholder color */
+.ql-editor.ql-blank::before {
+    color: #9e9e9e;
+    font-style: italic;
+}
+
+/* Custom styles for read-only mode */
+.ql-container.ql-disabled {
+    background-color: transparent;
+}
+
+.ql-disabled .ql-editor {
+    cursor: pointer;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    /* Simplify toolbar on mobile */
+    .ql-toolbar.ql-snow {
+        padding: 4px;
+    }
+    
+    /* Always show toolbar on mobile for better UX */
+    .note:not(.expanded) .ql-toolbar {
+        opacity: 1;
+    }
+    
+    /* Simplify toolbar on mobile */
+    .note:not(.expanded) .ql-formats {
+        margin-right: 5px;
+    }
+}
