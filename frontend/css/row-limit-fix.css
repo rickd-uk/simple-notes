@@ -1,4 +1,4 @@
-/* row-limit-fix.css - Limit notes layout to maximum 3 rows */
+/* row-limit-fix.css - Limit notes layout to maximum 3 rows with improved mobile handling */
 
 /* Base container styling - ensure proper min-height and overflow */
 .notes-container {
@@ -115,17 +115,57 @@
   }
 }
 
-/* Keep mobile layout as one column */
+/* Enhanced mobile layout - FORCE single column for ALL smartphone screens */
 @media (max-width: 768px) {
-  .notes-container {
+  /* Force single column layout regardless of note count */
+  .notes-container,
+  .notes-container.note-count-1,
+  .notes-container.note-count-2,
+  .notes-container.note-count-3,
+  .notes-container.note-count-4,
+  .notes-container.note-count-5,
+  .notes-container.note-count-6,
+  .notes-container.note-count-7,
+  .notes-container.note-count-8,
+  .notes-container.note-count-9,
+  .notes-container.note-count-many {
     display: flex !important;
     flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
     max-height: none !important;
+    padding: 15px !important;
+    gap: 15px !important;
+  }
+  
+  /* Reset any grid positioning for all notes */
+  .notes-container .note,
+  .notes-container.note-count-3 .note:nth-child(3),
+  .notes-container.note-count-4 .note:nth-child(3),
+  .notes-container.note-count-5 .note:nth-child(4),
+  .notes-container.note-count-5 .note:nth-child(5) {
+    grid-column: auto !important;
+    width: 100% !important;
+    margin: 0 0 15px 0 !important;
+    min-height: 45vh !important; /* Make notes taller on mobile */
+  }
+  
+  /* Last note shouldn't have bottom margin */
+  .notes-container .note:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Extra small screens (phones in portrait mode) */
+@media (max-width: 480px) {
+  .notes-container {
+    padding: 10px !important;
+    gap: 10px !important;
   }
   
   .notes-container .note {
+    margin: 0 0 10px 0 !important;
     min-height: 40vh !important;
-    margin-bottom: 15px !important;
   }
 }
 
