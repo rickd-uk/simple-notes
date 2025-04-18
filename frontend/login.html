@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body>
     <div class="login-container">
@@ -23,6 +24,16 @@
                 <input type="password" id="password" class="login-input" placeholder="Password" autocomplete="current-password">
                 <button type="button" id="loginBtn" class="login-btn">Login</button>
             </form>
+            <div class="dark-mode-toggle" style="justify-content: center; margin-top: 20px; border-top: none;">
+                <span class="dark-mode-label" style="margin-right: 10px;">
+                    <span class="theme-icon-light">☀️ Light</span>
+                    <span class="theme-icon-dark">🌙 Dark</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
     </div>
     <script>
@@ -31,6 +42,25 @@
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
             const loginError = document.getElementById('loginError');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+
+            // Initialize dark mode
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            // Dark mode toggle
+            darkModeToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
             
             // Check if already authenticated
             const checkAuth = async () => {

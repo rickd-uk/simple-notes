@@ -9,7 +9,8 @@ import {
   updateCategoryInState,
   removeCategoryFromState,
   setNotes,
-  getNotes, // Added this import to fix the error
+  getNotes, 
+  setDarkMode,
   elements
 } from './state.js';
 import { 
@@ -37,6 +38,7 @@ import {
   destroyQuillEditor,
   focusQuillEditor
 } from './quillEditor.js';
+import { toggleDarkMode } from './darkMode.js';
 
 // Setup all event listeners
 export function setupEventListeners() {
@@ -47,7 +49,8 @@ export function setupEventListeners() {
     categoryInput,
     cancelCategoryBtn,
     confirmCategoryBtn,
-    logoutBtn
+    logoutBtn,
+    darkModeToggle,
   } = elements;
   
   // Add note button
@@ -57,6 +60,11 @@ export function setupEventListeners() {
   addCategoryBtn.addEventListener('click', () => {
     showCategoryModal();
   });
+
+  // Dark mode toggle
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('change', handleDarkModeToggle);
+  }
 
   // Icon selection
   document.querySelectorAll('.icon-item').forEach(iconItem => {
@@ -129,6 +137,14 @@ export function setupEventListeners() {
 
   // Handle window resize
   window.addEventListener('resize', updateButtonPlacement);
+}
+
+// Handle dark mode toggle
+export function handleDarkModeToggle(event) {
+  const isDarkMode = event.target.checked;
+  setDarkMode(isDarkMode);
+  toggleDarkMode(event);
+  showToast(isDarkMode ? 'Dark mode enabled' : 'Light mode enabled');
 }
 
 // Create a new note

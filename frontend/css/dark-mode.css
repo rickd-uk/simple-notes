@@ -1,0 +1,197 @@
+/* dark-mode.css - Dark mode styling */
+
+:root {
+    /* Light mode (default) */
+    --primary-color: #6200ee;
+    --secondary-color: #03dac6;
+    --background-color: #f5f5f5;
+    --surface-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --sidebar-width: 220px;
+    --border-radius: 8px;
+}
+
+body.dark-mode {
+    /* Dark mode */
+    --primary-color: #bb86fc;
+    --secondary-color: #03dac6;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+}
+
+/* Dark mode toggle switch */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    margin-top: auto;
+    margin-bottom: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.dark-mode-label {
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Styles for elements that need dark mode specific changes */
+body.dark-mode .ql-toolbar.ql-snow {
+    background-color: #2a2a2a;
+    border-color: var(--border-color);
+}
+
+body.dark-mode .ql-editor.ql-blank::before {
+    color: #757575;
+}
+
+body.dark-mode .note {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .note:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .category:hover {
+    background-color: rgba(187, 134, 252, 0.1);
+}
+
+body.dark-mode .category.active {
+    background-color: rgba(187, 134, 252, 0.2);
+    border-left: 4px solid var(--primary-color);
+}
+
+body.dark-mode .add-category-btn:hover {
+    background-color: rgba(187, 134, 252, 0.1);
+}
+
+body.dark-mode .empty-icon,
+body.dark-mode .empty-message {
+    color: #757575;
+}
+
+/* Dark mode icons */
+.theme-icon-light {
+    display: inline-block;
+}
+
+.theme-icon-dark {
+    display: none;
+}
+
+body.dark-mode .theme-icon-light {
+    display: none;
+}
+
+body.dark-mode .theme-icon-dark {
+    display: inline-block;
+}
+
+/* Modal adjustments for dark mode */
+body.dark-mode .modal-content {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .modal-input {
+    background-color: #2a2a2a;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .icon-item {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .icon-item:hover {
+    background-color: rgba(187, 134, 252, 0.2);
+}
+
+body.dark-mode .icon-item.selected {
+    background-color: var(--primary-color);
+}
+
+/* Toast adjustments */
+body.dark-mode .toast {
+    background-color: #424242;
+}
+
+body.dark-mode .login-form {
+    background-color: var(--surface-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .login-title {
+    color: var(--primary-color);
+}
+
+body.dark-mode .login-input {
+    background-color: #2a2a2a;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .login-input:focus {
+    border-color: var(--primary-color);
+}
+
+body.dark-mode .login-btn {
+    background-color: var(--primary-color);
+}
+
+body.dark-mode .login-btn:hover {
+    background-color: #9b69fd;
+}

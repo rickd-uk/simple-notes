@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="css/modal-fix.css">
     <link rel="stylesheet" href="css/row-limit-fix.css">
     <link rel="stylesheet" href="css/sidebar-fix.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body>
     <div class="sidebar">
@@ -36,22 +37,32 @@
           <img src="images/simple-notes.png" alt="Simple Notes"
         onerror="this.outerHTML='<div class=\'fallback-text\'>Welcome to Simple Notes!</div>'" > 
        </div>
-       <div class="sidebar-footer">
-        <button id="logoutBtn" class="logout-btn">Logout</button>
-      </div>
         <div class="categories">
-            <div class="category active" data-id="all">
-                <div class="category-icon">📄</div>
-                <div class="category-name">All Notes</div>
-            </div>
-            <div class="category" data-id="uncategorized">
-                <div class="category-icon">📌</div>
-                <div class="category-name">Uncategorized</div>
-            </div>
-            <!-- Custom categories will be added here -->
+          <div class="category active" data-id="all">
+              <div class="category-icon">📄</div>
+              <div class="category-name">All Notes</div>
+          </div>
+        <div class="category" data-id="uncategorized">
+            <div class="category-icon">📌</div>
+            <div class="category-name">Uncategorized</div>
+        </div>
+        <!-- Custom categories will be added here -->
         </div>
         <div class="add-category">
             <button class="add-category-btn" id="addCategoryBtn">+ Add Category</button>
+        </div>
+        <div class="dark-mode-toggle">
+            <span class="dark-mode-label">
+                <span class="theme-icon-light">☀️ Light</span>
+                <span class="theme-icon-dark">🌙 Dark</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="logout-btn">Logout</button>
         </div>
     </div>
     

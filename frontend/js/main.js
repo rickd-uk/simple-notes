@@ -3,6 +3,7 @@ import { initState } from './state.js';
 import { loadCategories, loadNotes, preloadAdjacentCategories } from './api.js';
 import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
+import { initDarkMode } from './darkMode.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -10,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (typeof Quill === 'undefined') {
     console.error('Quill.js is not loaded. Rich text editing will not be available.');
   }
+
+  // Initialize dark mode
+  initDarkMode();
   
   // Initialize application state
   initState();

@@ -5,7 +5,8 @@ let state = {
   notes: [],
   categories: [],
   currentCategoryId: 'all',
-  apiUrl: '/api' // Use relative path for same-origin requests
+  apiUrl: '/api', // Use relative path for same-origin requests
+  darkMode: localStorage.getItem('darkMode') === 'true' // Track dark mode state
 };
 
 // DOM element references
@@ -24,12 +25,20 @@ export const elements = {
   confirmCategoryBtn: document.getElementById('confirmCategoryBtn'),
   categoryEditId: document.getElementById('categoryEditId'),
   toast: document.getElementById('toast'),
-  logoutBtn: document.getElementById('logoutBtn')
+  logoutBtn: document.getElementById('logoutBtn'),
+  darkModeToggle: document.getElementById('darkModeToggle')
 };
 
 // Initialize state
 export function initState() {
-  // Nothing to initialize at the moment
+  // Initialize dark mode state
+  if (state.darkMode) {
+    document.body.classList.add('dark-mode');
+    if (elements.darkModeToggle) {
+      elements.darkModeToggle.checked = true;
+    }
+  }
+  
   return state;
 }
 
@@ -50,6 +59,10 @@ export function getApiUrl() {
   return state.apiUrl;
 }
 
+export function isDarkMode() {
+  return state.darkMode;
+}
+
 // State setters
 export function setNotes(notes) {
   state.notes = notes;
@@ -61,6 +74,11 @@ export function setCategories(categories) {
 
 export function setCurrentCategoryId(categoryId) {
   state.currentCategoryId = categoryId;
+}
+
+export function setDarkMode(isDark) {
+  state.darkMode = isDark;
+  localStorage.setItem('darkMode', isDark.toString());
 }
 
 // Update a specific note in the state
