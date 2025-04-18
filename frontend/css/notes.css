@@ -78,9 +78,6 @@ button.note-delete {
     bottom: auto !important;
     left: auto !important;
     
-    /* Ensure it's above everything */
-    z-index: 9999 !important;
-    
     /* Basic styling */
     opacity: 0;
     background: none !important;
@@ -104,6 +101,9 @@ button.note-delete {
     /* Prevent any transforms */
     transform: none !important;
     margin: 0 !important;
+    
+    /* Lower z-index */
+    z-index: 5 !important;
 }
 
 .note:hover button.note-delete {
@@ -154,21 +154,41 @@ button.note-delete:hover {
     max-height: calc(100% - 40px); /* Ensure space for footer */
 }
 
+/* Background overlay when note is expanded */
+.note-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9); /* Even darker for better hiding */
+    z-index: 2000; /* Higher z-index to ensure it covers everything */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.note-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Expanded note styling */
 .note.expanded {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 90%;  /* Wider */
-    max-width: 1000px;  /* Increased from 800px */
-    height: 80%;  /* Taller */
-    max-height: 800px;  /* Increased from 600px */
-    z-index: 1001;
+    width: 95%;  /* Wider */
+    max-width: 1200px;  /* Increased */
+    height: 90%;  /* Taller */
+    max-height: 900px;  /* Increased */
+    z-index: 2001; /* Higher than overlay */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
+    background-color: var(--surface-color); /* Ensure opaque background */
 }
 
 .note.expanded .note-content {
@@ -194,37 +214,38 @@ button.note-delete:hover {
 /* Make sure expanded note delete button also stays in top right */
 .note.expanded button.note-delete {
     position: fixed !important;
-    top: calc(10% + 6px) !important;
-    right: calc(5% + 6px) !important;
+    top: 10px !important;
+    right: 10px !important;
     bottom: auto !important;
-    z-index: 9999 !important;
+    z-index: 2002 !important; /* Higher than expanded note */
     opacity: 1 !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Background overlay when note is expanded */
-.note-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+/* IMPORTANT: Hide all other delete buttons when a note is expanded */
+.note-overlay.active ~ .notes-container .note:not(.expanded) button.note-delete {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-.note-overlay.active {
-    opacity: 1;
-    visibility: visible;
+/* Hide all other notes when overlay is active */
+.note-overlay.active ~ .notes-container .note:not(.expanded) {
+    z-index: 1 !important;
 }
 
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .note.expanded {
-        width: 95%;
-        height: 85%;
+        width: 100%; /* Full width on mobile */
+        height: 100%; /* Full height on mobile */
+        max-height: 100%;
+        max-width: 100%;
+        border-radius: 0; /* Remove border radius for full screen experience */
+        top: 0;
+        left: 0;
+        transform: none;
     }
     
     /* Always show control buttons on mobile */
@@ -234,8 +255,8 @@ button.note-delete:hover {
 
     /* Ensure delete button is visible on mobile expanded view */
     .note.expanded button.note-delete {
-        top: 8% !important;
-        right: 5% !important;
+        top: 15px !important;
+        right: 15px !important;
         opacity: 1 !important;
         background-color: rgba(255, 255, 255, 0.9) !important;
     }

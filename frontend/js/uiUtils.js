@@ -1,5 +1,6 @@
 // uiUtils.js - UI utility functions
 import { elements } from './state.js';
+import { handleNoteDelete } from './eventHandlers.js';
 
 // Show toast notification
 export function showToast(message, duration = 3000) {
@@ -12,7 +13,60 @@ export function showToast(message, duration = 3000) {
   }, duration);
 }
 
-// Show category modal
+// Function to physically remove all delete buttons except for expanded note
+export function hideAllNoteButtons() {
+  // Instead of hiding, completely detach from DOM
+  document.querySelectorAll('.note:not(.expanded) .note-delete').forEach(btn => {
+    if (btn.parentNode) {
+      btn.parentNode.removeChild(btn);
+    }
+  });
+}
+
+// Function to recreate delete buttons when modals are closed
+export function recreateAllNoteButtons() {
+  document.querySelectorAll('.note').forEach(note => {
+    // Only add if doesn't exist
+    if (!note.querySelector('.note-delete')) {
+      const newBtn = document.createElement('button');
+      newBtn.className = 'note-delete';
+      newBtn.title = 'Delete note';
+      newBtn.innerHTML = '🗑️';
+      newBtn.style.cssText = `
+        position: absolute !important;
+        top: 6px !important;
+        right: 6px !important;
+        bottom: auto !important;
+        left: auto !important;
+        z-index: 10 !important;
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        color: #f44336 !important;
+        border: none !important;
+        padding: 6px !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        font-size: 18px !important;
+        opacity: 0;
+        width: 30px !important;
+        height: 30px !important;
+        line-height: 18px !important;
+        text-align: center !important;
+      `;
+      
+      const noteId = note.dataset.id;
+      if (noteId) {
+        newBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleNoteDelete(noteId);
+        });
+      }
+      
+      note.appendChild(newBtn);
+    }
+  });
+}
+
+// Show category modal with button hiding - UPDATED WITH FIX
 export function showCategoryModal(isEdit = false, categoryId = null, categoryName = '', categoryIcon = '📁') {
   const {
     categoryModal,
@@ -22,6 +76,9 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
     categoryIconInput,
     categoryEditId
   } = elements;
+  
+  // HIDE ALL DELETE BUTTONS
+  hideAllNoteButtons();
   
   categoryModalHeader.textContent = isEdit ? 'Edit Category' : 'Add New Category';
   confirmCategoryBtn.textContent = isEdit ? 'Update' : 'Add';
@@ -53,11 +110,22 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
     categoryEditId.value = '';
   }
   
+  // Ensure modal has high z-index and dark background
+  categoryModal.style.zIndex = '9000';
+  categoryModal.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+  
+  // Make modal content stand out
+  const modalContent = categoryModal.querySelector('.modal-content');
+  if (modalContent) {
+    modalContent.style.zIndex = '9001';
+    modalContent.style.position = 'relative';
+  }
+  
   categoryModal.classList.add('active');
   categoryInput.focus();
 }
 
-// Hide category modal
+// Hide category modal and restore buttons - UPDATED WITH FIX
 export function hideCategoryModal() {
   const {
     categoryModal,
@@ -70,6 +138,16 @@ export function hideCategoryModal() {
   categoryInput.value = '';
   categoryIconInput.value = '📁';
   categoryEditId.value = '';
+  
+  // Reset modal styles
+  categoryModal.style = '';
+  const modalContent = categoryModal.querySelector('.modal-content');
+  if (modalContent) {
+    modalContent.style = '';
+  }
+  
+  // RESTORE ALL DELETE BUTTONS
+  setTimeout(recreateAllNoteButtons, 50);
 }
 
 // Confirm dialog (returns Promise)

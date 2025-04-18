@@ -21,10 +21,7 @@ import {
   focusQuillEditor,
   updateQuillEditorLayout
 } from './quillEditor.js';
-
-
-// Add this to your ui.js file in the renderNotes function, replacing the existing note count class logic
-
+import { hideAllNoteButtons, recreateAllNoteButtons } from './uiUtils.js';
 
 // Render notes in the UI
 export function renderNotes() {
@@ -36,14 +33,14 @@ export function renderNotes() {
 
    
   if (notes.length === 0) {
-  notesContainer.innerHTML = `
-    <div class="empty-state">
-      <div class="empty-icon">📝</div>
-      <div class="empty-message">No notes in this category</div>
-      <button class="empty-action" id="emptyAddNoteBtn">Create a note</button>
-    </div>
-  `;
-  document.getElementById('emptyAddNoteBtn').addEventListener('click', createNewNote); 
+    notesContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <div class="empty-message">No notes in this category</div>
+        <button class="empty-action" id="emptyAddNoteBtn">Create a note</button>
+      </div>
+    `;
+    document.getElementById('emptyAddNoteBtn').addEventListener('click', createNewNote); 
   } else {
     // Use DocumentFragment for better performance
     const fragment = document.createDocumentFragment();
@@ -105,89 +102,91 @@ export function renderNotes() {
     });
   }
 
-// Fix for delete button position
-function fixDeleteButtons() {
-  console.log("Fixing delete buttons position...");
-  
-  // Get all delete buttons
-  const deleteButtons = document.querySelectorAll('.note-delete');
-  
-  deleteButtons.forEach(button => {
-    // Remove the button from its current parent
-    const originalParent = button.parentNode;
-    const noteElement = button.closest('.note');
+  // Fix for delete button position
+  function fixDeleteButtons() {
+    console.log("Fixing delete buttons position...");
     
-    if (noteElement) {
-      // Move the button to be a direct child of the note element instead of inside the footer
-      originalParent.removeChild(button);
-      noteElement.appendChild(button);
+    // Get all delete buttons
+    const deleteButtons = document.querySelectorAll('.note-delete');
+    
+    deleteButtons.forEach(button => {
+      // Remove the button from its current parent
+      const originalParent = button.parentNode;
+      const noteElement = button.closest('.note');
       
-      // Apply more aggressive inline styles
-      button.style.cssText = `
-        position: absolute !important;
-        top: 6px !important;
-        right: 6px !important;
-        bottom: auto !important;
-        left: auto !important;
-        z-index: 9999 !important;
-        background-color: rgba(255, 255, 255, 0.7) !important;
-        color: #f44336 !important;
-        border: none !important;
-        padding: 6px !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-        font-size: 18px !important;
-        opacity: 0.7;
-        width: 30px !important;
-        height: 30px !important;
-        line-height: 18px !important;
-        text-align: center !important;
-      `;
-    }
-  });
-  
-  // Handle button visibility on hover
-  document.querySelectorAll('.note').forEach(note => {
-    note.addEventListener('mouseenter', () => {
-      const btn = note.querySelector('.note-delete');
-      if (btn) btn.style.opacity = '1';
+      if (noteElement) {
+        // Move the button to be a direct child of the note element instead of inside the footer
+        originalParent.removeChild(button);
+        noteElement.appendChild(button);
+        
+        // Apply more aggressive inline styles
+        button.style.cssText = `
+          position: absolute !important;
+          top: 6px !important;
+          right: 6px !important;
+          bottom: auto !important;
+          left: auto !important;
+          z-index: 10 !important;
+          background-color: rgba(255, 255, 255, 0.7) !important;
+          color: #f44336 !important;
+          border: none !important;
+          padding: 6px !important;
+          border-radius: 4px !important;
+          cursor: pointer !important;
+          font-size: 18px !important;
+          opacity: 0;
+          width: 30px !important;
+          height: 30px !important;
+          line-height: 18px !important;
+          text-align: center !important;
+        `;
+      }
     });
     
-    note.addEventListener('mouseleave', () => {
-      const btn = note.querySelector('.note-delete');
-      if (btn) btn.style.opacity = '0.7';
+    // Handle button visibility on hover
+    document.querySelectorAll('.note').forEach(note => {
+      note.addEventListener('mouseenter', () => {
+        const btn = note.querySelector('.note-delete');
+        if (btn) btn.style.opacity = '1';
+      });
+      
+      note.addEventListener('mouseleave', () => {
+        const btn = note.querySelector('.note-delete');
+        if (!note.classList.contains('expanded') && btn) {
+          btn.style.opacity = '0';
+        }
+      });
     });
-  });
-  
-  console.log(`Fixed ${deleteButtons.length} delete buttons`);
-}
+    
+    console.log(`Fixed ${deleteButtons.length} delete buttons`);
+  }
 
-// Call this with a longer delay to ensure Quill is fully initialized
-setTimeout(fixDeleteButtons, 500);
+  // Call this with a longer delay to ensure Quill is fully initialized
+  setTimeout(fixDeleteButtons, 500);
 
-// Call this after your notes are rendered
-setTimeout(fixDeleteButtons, 100);
-  
-// Update classes for dynamic layout based on note count
-const notesCount = notes.length;
+  // Call this after your notes are rendered
+  setTimeout(fixDeleteButtons, 100);
+    
+  // Update classes for dynamic layout based on note count
+  const notesCount = notes.length;
 
-// Remove all possible layout classes
-notesContainer.classList.remove(
-  'note-count-1', 
-  'note-count-2', 
-  'note-count-3', 
-  'note-count-4',
-  'note-count-5',
-  'note-count-6',
-  'note-count-7',
-  'note-count-8',
-  'note-count-9',
-  'note-count-many',
-  'notes-count-1',
-  'notes-count-2',
-  'notes-count-3',
-  'notes-count-many'
-);
+  // Remove all possible layout classes
+  notesContainer.classList.remove(
+    'note-count-1', 
+    'note-count-2', 
+    'note-count-3', 
+    'note-count-4',
+    'note-count-5',
+    'note-count-6',
+    'note-count-7',
+    'note-count-8',
+    'note-count-9',
+    'note-count-many',
+    'notes-count-1',
+    'notes-count-2',
+    'notes-count-3',
+    'notes-count-many'
+  );
 
   // Add appropriate class based on number of notes
   if (notesCount === 0) {
@@ -223,8 +222,6 @@ notesContainer.classList.remove(
     notesContainer.classList.add('note-count-many');
     notesContainer.classList.add('notes-count-many');
   }
-
- 
 }
 
 // Render categories in the UI
@@ -319,7 +316,7 @@ export function renderCategories() {
   });
 }
 
-// Toggle note expansion
+// Toggle note expansion - UPDATED VERSION WITH FIX
 export function toggleNoteExpansion(noteElement) {
   // Create overlay if it doesn't exist yet
   let overlay = document.querySelector('.note-overlay');
@@ -340,20 +337,74 @@ export function toggleNoteExpansion(noteElement) {
   const noteId = noteElement.dataset.id;
   const isExpanding = !noteElement.classList.contains('expanded');
   
-  if (!isExpanding) {
-    // Collapse note
-    noteElement.classList.remove('expanded');
-    overlay.classList.remove('active');
+  if (isExpanding) {
+    // REMOVE ALL DELETE BUTTONS EXCEPT FOR THIS NOTE
+    hideAllNoteButtons();
     
-    // Return note to its original container
-    elements.notesContainer.appendChild(noteElement);
+    // Add a delete button only to the expanded note if needed
+    if (!noteElement.querySelector('.note-delete')) {
+      const newBtn = document.createElement('button');
+      newBtn.className = 'note-delete';
+      newBtn.title = 'Delete note';
+      newBtn.innerHTML = '🗑️';
+      newBtn.style.cssText = `
+        position: fixed !important;
+        top: 10px !important;
+        right: 10px !important;
+        z-index: 9002 !important;
+        opacity: 1 !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        display: block !important;
+        color: #f44336 !important;
+        border: none !important;
+        padding: 6px !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        font-size: 18px !important;
+        width: 30px !important;
+        height: 30px !important;
+        line-height: 18px !important;
+        text-align: center !important;
+      `;
+      newBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleNoteDelete(noteId);
+      });
+      noteElement.appendChild(newBtn);
+    }
     
-    // Allow scrolling on main container again
-    document.body.style.overflow = '';
-  } else {
     // Expand note
     noteElement.classList.add('expanded');
     overlay.classList.add('active');
+    
+    // Add inline styles to maximize size
+    noteElement.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 95%;
+      max-width: 1200px;
+      height: 90%;
+      max-height: 900px;
+      z-index: 9001;
+      background-color: var(--surface-color);
+    `;
+    
+    // Apply mobile styles if needed
+    if (window.innerWidth <= 768) {
+      noteElement.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: none;
+        border-radius: 0;
+        z-index: 9001;
+        background-color: var(--surface-color);
+      `;
+    }
     
     // Move to body to ensure proper positioning and z-index
     document.body.appendChild(noteElement);
@@ -361,8 +412,29 @@ export function toggleNoteExpansion(noteElement) {
     // Prevent scrolling on main container
     document.body.style.overflow = 'hidden';
     
+    // Make overlay darker
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+    overlay.style.zIndex = '9000';
+    
     // Focus on editor
     focusQuillEditor(noteId);
+  } else {
+    // Collapse note
+    noteElement.classList.remove('expanded');
+    overlay.classList.remove('active');
+    
+    // Remove inline styles
+    noteElement.style = '';
+    overlay.style = '';
+    
+    // Return note to its original container
+    elements.notesContainer.appendChild(noteElement);
+    
+    // Allow scrolling on main container again
+    document.body.style.overflow = '';
+    
+    // RESTORE ALL DELETE BUTTONS
+    setTimeout(recreateAllNoteButtons, 50);
   }
   
   // Update Quill editor layout after expanding/collapsing
