@@ -1,0 +1,142 @@
+/* row-limit-fix.css - Limit notes layout to maximum 3 rows */
+
+/* Base container styling - ensure proper min-height and overflow */
+.notes-container {
+  grid-auto-rows: minmax(30vh, 1fr);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Single note - Full width and tall */
+.notes-container.note-count-1 {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 1fr !important;
+}
+
+.notes-container.note-count-1 .note {
+  min-height: 75vh !important;
+}
+
+/* Two notes - Side by side in one row */
+.notes-container.note-count-2 {
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: 1fr !important;
+}
+
+.notes-container.note-count-2 .note {
+  min-height: 70vh !important;
+}
+
+/* Three notes - One row of 3 */
+.notes-container.note-count-3 {
+  grid-template-columns: 1fr 1fr 1fr !important;
+  grid-template-rows: 1fr !important;
+}
+
+.notes-container.note-count-3 .note {
+  min-height: 65vh !important;
+}
+
+/* Fix specific layout for note-count-3 */
+.notes-container.note-count-3 .note:nth-child(3) {
+  grid-column: 3 / 4 !important;
+}
+
+/* Four to six notes - 2 rows of 3 (or fewer) */
+.notes-container.note-count-4,
+.notes-container.note-count-5,
+.notes-container.note-count-6 {
+  grid-template-columns: 1fr 1fr 1fr !important;
+  grid-template-rows: 1fr 1fr !important;
+}
+
+.notes-container.note-count-4 .note,
+.notes-container.note-count-5 .note,
+.notes-container.note-count-6 .note {
+  min-height: 40vh !important;
+}
+
+/* Fixed layout for 4 notes - 2x2 grid */
+.notes-container.note-count-4 .note:nth-child(3) {
+  grid-column: auto !important;
+}
+
+/* Seven to nine notes - 3 rows of 3 */
+.notes-container.note-count-7,
+.notes-container.note-count-8,
+.notes-container.note-count-9 {
+  grid-template-columns: 1fr 1fr 1fr !important;
+  grid-template-rows: 1fr 1fr 1fr !important;
+}
+
+.notes-container.note-count-7 .note,
+.notes-container.note-count-8 .note,
+.notes-container.note-count-9 .note {
+  min-height: 30vh !important;
+}
+
+/* Many notes - enforce 3 column layout with maximum 3 rows visible at once */
+.notes-container.note-count-many {
+  grid-template-columns: repeat(3, 1fr) !important;
+  display: grid !important;
+  grid-template-rows: repeat(3, minmax(30vh, 1fr)) !important;
+  grid-auto-rows: minmax(30vh, 1fr) !important;
+  overflow-y: auto !important;
+}
+
+.notes-container.note-count-many .note {
+  min-height: 30vh !important;
+}
+
+/* Medium screen adjustments */
+@media (max-width: 1200px) and (min-width: 769px) {
+  /* Keep 3 notes in a single row */
+  .notes-container.note-count-3 {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    grid-template-rows: 1fr !important;
+  }
+  
+  .notes-container.note-count-3 .note:nth-child(3) {
+    grid-column: 3 / 4 !important;
+  }
+  
+  /* Make 4-6 notes fit in 2 rows */
+  .notes-container.note-count-4,
+  .notes-container.note-count-5,
+  .notes-container.note-count-6 {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+  }
+  
+  /* Make 4 notes fit in 2 rows of 2 */
+  .notes-container.note-count-4 {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+  }
+}
+
+/* Keep mobile layout as one column */
+@media (max-width: 768px) {
+  .notes-container {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: none !important;
+  }
+  
+  .notes-container .note {
+    min-height: 40vh !important;
+    margin-bottom: 15px !important;
+  }
+}
+
+/* For larger screens, ensure notes look good */
+@media (min-width: 1520px) {
+  .notes-container.note-count-1 .note {
+    min-height: 80vh !important;
+  }
+  
+  .notes-container.note-count-2 .note,
+  .notes-container.note-count-3 .note {
+    min-height: 70vh !important;
+  }
+}
