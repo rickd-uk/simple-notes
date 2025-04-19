@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="css/row-limit-fix.css">
     <link rel="stylesheet" href="css/sidebar-fix.css">
     <link rel="stylesheet" href="css/dark-mode.css">
+    <link rel="stylesheet" href="css/confirm-modal.css">
 </head>
 <body>
     <div class="sidebar">
@@ -136,6 +137,21 @@
             </div>
         </div>
     </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header" id="confirmModalHeader">Confirm Delete</div>
+            <div class="modal-message" id="confirmModalMessage">
+                Are you sure you want to delete ALL notes in this category? This action cannot be undone.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancelConfirmBtn">Cancel</button>
+                <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn">Delete All</button>
+            </div>
+        </div>
+    </div>
+
     
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>

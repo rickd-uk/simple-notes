@@ -150,11 +150,63 @@ export function hideCategoryModal() {
   setTimeout(recreateAllNoteButtons, 50);
 }
 
-// Confirm dialog (returns Promise)
-export function confirmDialog(message) {
+// Confirm dialog with custom modal (returns Promise)
+export function confirmDialog(message, headerText = 'Confirm Delete', confirmBtnText = 'Delete All') {
   return new Promise((resolve) => {
-    const result = window.confirm(message);
-    resolve(result);
+    // Get modal elements
+    const confirmModal = document.getElementById('confirmModal');
+    const messageEl = document.getElementById('confirmModalMessage');
+    const headerEl = document.getElementById('confirmModalHeader');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const cancelBtn = document.getElementById('cancelConfirmBtn');
+    
+    // Set content
+    messageEl.textContent = message;
+    headerEl.textContent = headerText;
+    confirmBtn.textContent = confirmBtnText;
+    
+    // Show the modal
+    confirmModal.classList.add('active');
+    
+    // Set up event listeners
+    const handleCancel = () => {
+      cleanup();
+      resolve(false);
+    };
+    
+    const handleConfirm = () => {
+      cleanup();
+      resolve(true);
+    };
+    
+    const handleKeydown = (e) => {
+      if (e.key === 'Escape') {
+        handleCancel();
+      } else if (e.key === 'Enter') {
+        handleConfirm();
+      }
+    };
+    
+    const handleOutsideClick = (e) => {
+      if (e.target === confirmModal) {
+        handleCancel();
+      }
+    };
+    
+    // Cleanup function to remove event listeners
+    const cleanup = () => {
+      confirmModal.classList.remove('active');
+      cancelBtn.removeEventListener('click', handleCancel);
+      confirmBtn.removeEventListener('click', handleConfirm);
+      document.removeEventListener('keydown', handleKeydown);
+      confirmModal.removeEventListener('click', handleOutsideClick);
+    };
+    
+    // Add event listeners
+    cancelBtn.addEventListener('click', handleCancel);
+    confirmBtn.addEventListener('click', handleConfirm);
+    document.addEventListener('keydown', handleKeydown);
+    confirmModal.addEventListener('click', handleOutsideClick);
   });
 }
 

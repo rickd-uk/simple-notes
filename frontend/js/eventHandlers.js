@@ -254,9 +254,11 @@ export async function handleCategoryDelete(categoryId) {
   const categories = getCategories();
   const categoryName = getCategoryName(categoryId, categories);
   
-  const confirmed = await confirmDialog(
-    `Are you sure you want to delete "${categoryName}"? Notes will be moved to Uncategorized.`
-  );
+   const confirmed = await confirmDialog(
+  `Are you sure you want to delete ALL notes in "${categoryName}"? This action cannot be undone.`,
+  'Confirm Delete',
+  'Delete All'
+);
   
   if (confirmed) {
     const success = await deleteCategory(categoryId);

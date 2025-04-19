@@ -1,0 +1,55 @@
+/* Confirm Modal Styles */
+#confirmModal .modal-content {
+    max-width: 450px;
+}
+
+#confirmModal .modal-header {
+    color: #f44336;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+#confirmModal .modal-message {
+    margin-bottom: 25px;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+#confirmModal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn-delete {
+    background-color: #f44336 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.modal-btn-delete:hover {
+    background-color: #d32f2f !important;
+}
+
+/* Dark mode specific styles */
+body.dark-mode #confirmModal .modal-header {
+    color: #ff6b6b;
+}
+
+body.dark-mode #confirmModal .modal-btn-delete {
+    background-color: #ff4d4d !important;
+}
+
+body.dark-mode #confirmModal .modal-btn-delete:hover {
+    background-color: #ff3333 !important;
+}
+
+/* Animation for modal */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#confirmModal.active .modal-content {
+    animation: modalFadeIn 0.2s forwards;
+}
