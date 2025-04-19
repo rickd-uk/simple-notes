@@ -11,6 +11,7 @@ import {
   setNotes,
   getNotes, 
   setDarkMode,
+  setCategories,
   elements
 } from './state.js';
 import { 
