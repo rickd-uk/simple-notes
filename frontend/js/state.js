@@ -26,7 +26,8 @@ export const elements = {
   categoryEditId: document.getElementById('categoryEditId'),
   toast: document.getElementById('toast'),
   logoutBtn: document.getElementById('logoutBtn'),
-  darkModeToggle: document.getElementById('darkModeToggle')
+  darkModeToggle: document.getElementById('darkModeToggle'),
+  sidebarFooter: document.querySelector('.sidebar-footer')
 };
 
 // Initialize state

@@ -12,6 +12,7 @@ import {
   saveNotesToCache, 
   saveCategoriesToCache,
   clearNotesCache,
+  clearAllCaches,
   isCacheFresh
 } from './cache.js';
 import { renderNotes, renderCategories } from './ui.js';
@@ -347,6 +348,67 @@ export async function deleteCategory(id) {
     console.error('Error deleting category:', error);
     showToast('Error deleting category');
     return false;
+  }
+}
+
+// Add to api.js - Function to delete all categories
+
+export async function deleteAllCategories() {
+  try {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/categories/all`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete all categories');
+    
+    // Clear all notes caches since category assignments changed
+    clearAllCaches();
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error deleting all categories:', error);
+    showToast('Error deleting all categories');
+    return { error: true };
+  }
+}
+
+// Alternative implementation if bulk endpoint doesn't exist:
+export async function deleteAllCategoriesSequential() {
+  try {
+    const apiUrl = getApiUrl();
+    const categories = getCategories();
+    
+    if (!categories || categories.length === 0) {
+      return { count: 0, message: 'No categories to delete' };
+    }
+    
+    // Show loading indicator for long operations
+    showToast('Deleting all categories...');
+    
+    // Delete categories one by one
+    let deletedCount = 0;
+    for (const category of categories) {
+      const response = await fetch(`${apiUrl}/categories/${category.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        deletedCount++;
+      }
+    }
+    
+    // Clear all caches
+    clearAllCaches();
+    
+    return { 
+      count: deletedCount, 
+      message: `Deleted ${deletedCount} categories` 
+    };
+  } catch (error) {
+    console.error('Error deleting all categories:', error);
+    showToast('Error deleting all categories');
+    return { error: true };
   }
 }
 

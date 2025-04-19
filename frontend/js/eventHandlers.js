@@ -18,6 +18,7 @@ import {
   updateNote, 
   deleteNote,
   deleteAllNotesInCategory,
+  deleteAllCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -49,6 +50,7 @@ export function setupEventListeners() {
     categoryInput,
     cancelCategoryBtn,
     confirmCategoryBtn,
+    sidebarFooter,
     logoutBtn,
     darkModeToggle,
   } = elements;
@@ -127,6 +129,20 @@ export function setupEventListeners() {
       }
     }
   });
+
+  if (sidebarFooter) {
+    // Check if the button already exists
+    if (!document.getElementById('deleteAllCategoriesBtn')) {
+      const deleteAllCategoriesBtn = document.createElement('button');
+      deleteAllCategoriesBtn.id = 'deleteAllCategoriesBtn';
+      deleteAllCategoriesBtn.className = 'delete-all-btn';
+      deleteAllCategoriesBtn.innerHTML = 'Delete All Categories';
+      deleteAllCategoriesBtn.addEventListener('click', handleDeleteAllCategories);
+      
+      // Add the button to the sidebar footer
+      sidebarFooter.insertBefore(deleteAllCategoriesBtn, document.getElementById('logoutBtn'));
+    }
+  }
 
   // Logout button
   if (logoutBtn) {
@@ -387,5 +403,49 @@ export async function handleCategoryUpdate() {
     renderCategories();
     hideCategoryModal();
     showToast('Category updated');
+  }
+}
+
+// Handle deletion of all categories
+export async function handleDeleteAllCategories() {
+  const confirmed = await confirmDialog(
+    'Are you sure you want to delete ALL categories? All notes will be moved to Uncategorized. This action cannot be undone.',
+    'Delete All Categories',
+    'Delete All'
+  );
+  
+  if (confirmed) {
+    // If there are no categories, show message and return
+    if (getCategories().length === 0) {
+      showToast('No categories to delete');
+      return;
+    }
+    
+    // Show loading message
+    showToast('Deleting all categories...');
+    
+    // Call the API to delete all categories
+    const result = await deleteAllCategories();
+    
+    if (!result.error) {
+      // Clear categories array
+      setCategories([]);
+      
+      // Switch to all notes view
+      setCurrentCategoryId('all');
+      
+      // Reload notes to reflect changes
+      await loadNotes();
+      
+      // Re-render categories
+      renderCategories();
+      
+      // Show success message
+      if (result.count !== undefined) {
+        showToast(`Deleted ${result.count} categories`);
+      } else {
+        showToast('All categories deleted');
+      }
+    }
   }
 }

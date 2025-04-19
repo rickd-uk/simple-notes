@@ -21,8 +21,6 @@ process.on('unhandledRejection', (reason, promise) => {
 
 
 
-
-
 const app = express();
 const port = process.env.PORT || 3012;
 
@@ -286,6 +284,26 @@ app.put('/api/categories/:id', async (req, res) => {
   }
 });
 
+
+// DELETE all categories
+app.delete('/api/categories/all',  async (req, res) => {
+  try {
+    // First update all notes to have null category_id
+    await db.query('UPDATE notes SET category_id = NULL');
+    
+    // Then delete all categories
+    const result = await db.query('DELETE FROM categories');
+    
+    console.log(`Deleted ${result.rowCount} categories`);
+    res.json({ message: 'All categories deleted', count: result.rowCount });
+  } catch (err) {
+    console.error('Error in bulk delete categories:', err);
+    res.status(500).json({ error: 'Server error during bulk delete operation' });
+  }
+});
+
+
+
 app.delete('/api/categories/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -297,6 +315,9 @@ app.delete('/api/categories/:id', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+
 
 // Explicit handler for login page - BEFORE history middleware
 app.get('/login.html', (req, res) => {
