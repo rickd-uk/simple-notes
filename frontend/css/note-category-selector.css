@@ -1,0 +1,294 @@
+/* Fixed note-category-selector.css */
+
+/* Note category label styling */
+.note-category {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background-color: rgba(98, 0, 238, 0.1);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  max-width: fit-content;
+  position: relative; /* Keep this if needed for internal elements, otherwise remove */
+  margin-right: 25%; /* Note: This might cause layout issues, review if needed */
+}
+
+.note-category:hover {
+  background-color: rgba(98, 0, 238, 0.2);
+}
+
+.note-category-icon {
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.note-category-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Position within note footer - CENTERED CONTAINER (Non-Expanded Note) */
+.note:not(.expanded) .note-footer { /* Specific to non-expanded notes */
+  position: absolute !important;
+  top: auto !important;
+  bottom: 10px !important;
+  left: 0 !important;
+  right: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  z-index: 5 !important;
+  padding: 0 40px !important; /* Make room for buttons on sides */
+  box-sizing: border-box !important;
+}
+
+/* Position the timestamp */
+.note-timestamp {
+  font-size: 12px !important;
+  color: #757575 !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important; /* Consider removing if causing issues */
+  text-align: right !important; /* Often redundant in flex, but harmless */
+}
+
+/* Expand button position - BOTTOM RIGHT (Non-Expanded Note) */
+.note:not(.expanded) .note-expand { /* Specific to non-expanded notes */
+  position: absolute !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: 10px !important;
+  right: 10px !important;
+  z-index: 10 !important;
+}
+
+/* Delete button position - BOTTOM LEFT (Non-Expanded Note) */
+.note:not(.expanded) .note-delete { /* Specific to non-expanded notes */
+  position: absolute !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 10px !important;
+  left: 10px !important;
+  z-index: 10 !important;
+}
+
+/* --- Core Fix for Modal Centering --- */
+/* Set relative positioning ONLY for NON-EXPANDED notes */
+/* This allows absolutely positioned children like footer/buttons to work */
+.note:not(.expanded) {
+  position: relative;
+  /* Add any other styles specific to non-expanded notes here */
+}
+
+/* Styles applying to ALL notes (normal and expanded) */
+.note {
+  /* padding-bottom is needed to prevent content overlap BEFORE expansion */
+  /* Consider if !important is truly necessary */
+  padding-bottom: 40px !important;
+  width: 100%;
+  /* Add other styles that apply to BOTH states */
+  box-sizing: border-box; /* Good practice */
+  /* Example: Maybe background, border-radius etc. apply to both */
+  background-color: var(--surface-color); /* Assuming notes always have a background */
+  border-radius: var(--border-radius); /* Assuming consistent radius */
+}
+/* --- End of Core Fix --- */
+
+
+/* Positioning in expanded notes */
+/* Footer position INSIDE the expanded note (relative to expanded note) */
+/* Note: JS moves expanded note to body and uses fixed positioning */
+/* This rule might need adjustment depending on final expanded note structure */
+.note.expanded .note-footer {
+  position: absolute !important; /* Position relative to the .note.expanded container */
+  bottom: 15px !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10 !important; /* Ensure footer is above editor content */
+  padding: 0 50px !important; /* Spacing for buttons */
+  /* Ensure flex centering still applies */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Delete button in expanded note - Viewport Fixed */
+/* This rule IS CORRECT, but being overridden */
+.note.expanded .note-delete {
+  position: fixed !important;     /* Position relative to viewport */
+  bottom: 15px !important;    /* 15px from viewport bottom */
+  left: 15px !important;     /* 15px from viewport left */
+  top: auto !important;
+  right: auto !important;
+  z-index: 9002 !important;    /* Above modal content, below potential top controls? */
+  opacity: 1 !important;
+  background-color: rgba(255, 255, 255, 0.9) !important; /* Make it visible */
+  border-radius: 50%;         /* Example: make it round */
+  padding: 5px;             /* Example: padding */
+  /* Add width/height if needed */
+}
+
+/* Expanded note expand/collapse button positioning - Viewport Fixed */
+.note.expanded .note-expand {
+  position: fixed !important;     /* Position relative to viewport */
+  bottom: 15px !important;    /* 15px from viewport bottom */
+  right: 15px !important;    /* 15px from viewport right */
+  z-index: 9002 !important;    /* Same level as delete */
+  /* Add background/padding/etc. if needed */
+}
+
+
+/* --- Category Selection Modal --- */
+.category-selection-list {
+  margin-bottom: 15px;
+  margin-top: 10px;
+}
+
+.category-selection-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 5px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+}
+
+.category-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.category-option:hover {
+  background-color: rgba(98, 0, 238, 0.05);
+}
+
+.category-option.selected {
+  background-color: rgba(98, 0, 238, 0.1);
+}
+
+.category-option-icon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.category-option-name {
+  flex-grow: 1;
+  font-size: 16px;
+}
+
+/* No categories message */
+.no-categories-message {
+  padding: 20px;
+  text-align: center;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Hide the input field when selecting a category for a note */
+#categoryModal[data-mode="note-category"] .modal-header {
+  color: var(--primary-color);
+}
+
+#categoryModal[data-mode="note-category"] #categoryInput {
+  display: none !important;
+}
+
+/* Adjust icon selector for category selection mode */
+#categoryModal[data-mode="note-category"] .icon-selector {
+  display: none !important;
+}
+
+
+/* --- Dark mode support --- */
+body.dark-mode .note-category {
+  background-color: rgba(187, 134, 252, 0.1);
+}
+
+body.dark-mode .note-category:hover {
+  background-color: rgba(187, 134, 252, 0.2);
+}
+
+body.dark-mode .category-selection-options {
+  border-color: var(--border-color); /* Make sure --border-color is defined for dark mode */
+}
+
+body.dark-mode .category-option:hover {
+  background-color: rgba(187, 134, 252, 0.05);
+}
+
+body.dark-mode .category-option.selected {
+  background-color: rgba(187, 134, 252, 0.1);
+}
+
+body.dark-mode .no-categories-message {
+  color: #aaaaaa;
+}
+
+/* --- Mobile optimization --- */
+@media (max-width: 768px) {
+  .note-category-name {
+    max-width: 100px;
+  }
+
+  .category-option {
+    padding: 10px 12px;
+  }
+
+  .category-option-icon {
+    font-size: 16px;
+  }
+
+  .category-option-name {
+    font-size: 14px;
+  }
+
+  /* Ensure footer layout works on mobile (non-expanded) */
+  .note:not(.expanded) .note-footer {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    padding: 0 35px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-category {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .note-category-icon {
+    font-size: 12px;
+  }
+
+  .note-category-name {
+    max-width: 80px;
+  }
+
+  /* Adjust delete button size on small screens (applies to both states potentially) */
+  .note-delete {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 14px !important;
+    /* Adjust fixed position slightly if needed */
+    /* bottom: 10px !important; */
+    /* left: 10px !important; */
+  }
+   /* Adjust expand button size on small screens */
+  .note-expand {
+     /* Add similar size adjustments if needed */
+  }
+}

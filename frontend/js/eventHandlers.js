@@ -1,4 +1,4 @@
-// eventHandlers.js - Event handler functions
+// eventHandlers.js - Event handler functions with modal category selection
 import { 
   getCurrentCategoryId, 
   setCurrentCategoryId,
@@ -41,6 +41,13 @@ import {
   focusQuillEditor
 } from './quillEditor.js';
 import { toggleDarkMode } from './darkMode.js';
+import { 
+  showNoteCategoryModal, 
+  hideNoteCategoryModal, 
+  handleNoteCategoryConfirm,
+  updateNoteCategoryDisplay,
+  changeNoteCategory
+} from './noteCategoryManager.js';
 
 // Setup all event listeners
 export function setupEventListeners() {
@@ -98,19 +105,13 @@ export function setupEventListeners() {
   });
 
   // Category modal buttons
-  cancelCategoryBtn.addEventListener('click', hideCategoryModal);
-  confirmCategoryBtn.addEventListener('click', () => {
-    if (elements.categoryEditId.value) {
-      handleCategoryUpdate();
-    } else {
-      handleCategoryCreate();
-    }
-  });
+  cancelCategoryBtn.addEventListener('click', handleCategoryModalCancel);
+  confirmCategoryBtn.addEventListener('click', handleCategoryModalConfirm);
 
   // Close modal when clicking outside
   categoryModal.addEventListener('click', (e) => {
     if (e.target === categoryModal) {
-      hideCategoryModal();
+      handleCategoryModalCancel();
     }
   });
 
@@ -118,7 +119,7 @@ export function setupEventListeners() {
   document.addEventListener('keydown', (e) => {
     // Close modal with Escape key
     if (e.key === 'Escape' && categoryModal.classList.contains('active')) {
-      hideCategoryModal();
+      handleCategoryModalCancel();
     }
     
     // Close expanded note with Escape key
@@ -154,6 +155,33 @@ export function setupEventListeners() {
 
   // Handle window resize
   window.addEventListener('resize', updateButtonPlacement);
+  
+  // Make category functions available globally for the UI
+  window.showNoteCategoryModal = showNoteCategoryModal;
+  window.updateNoteCategoryDisplay = updateNoteCategoryDisplay;
+  window.changeNoteCategory = changeNoteCategory;
+}
+
+// Handle category modal cancel based on mode
+function handleCategoryModalCancel() {
+  const categoryModal = document.getElementById('categoryModal');
+  if (categoryModal.dataset.mode === 'note-category') {
+    hideNoteCategoryModal();
+  } else {
+    hideCategoryModal();
+  }
+}
+
+// Handle category modal confirm based on mode
+function handleCategoryModalConfirm() {
+  const categoryModal = document.getElementById('categoryModal');
+  if (categoryModal.dataset.mode === 'note-category') {
+    handleNoteCategoryConfirm();
+  } else if (elements.categoryEditId.value) {
+    handleCategoryUpdate();
+  } else {
+    handleCategoryCreate();
+  }
 }
 
 // Handle dark mode toggle

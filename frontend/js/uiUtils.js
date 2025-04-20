@@ -32,27 +32,7 @@ export function recreateAllNoteButtons() {
       newBtn.className = 'note-delete';
       newBtn.title = 'Delete note';
       newBtn.innerHTML = '🗑️';
-      newBtn.style.cssText = `
-        position: absolute !important;
-        top: 6px !important;
-        right: 6px !important;
-        bottom: auto !important;
-        left: auto !important;
-        z-index: 10 !important;
-        background-color: rgba(255, 255, 255, 0.7) !important;
-        color: #f44336 !important;
-        border: none !important;
-        padding: 6px !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-        font-size: 18px !important;
-        opacity: 0;
-        width: 30px !important;
-        height: 30px !important;
-        line-height: 18px !important;
-        text-align: center !important;
-      `;
-      
+            
       const noteId = note.dataset.id;
       if (noteId) {
         newBtn.addEventListener('click', (e) => {

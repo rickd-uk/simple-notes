@@ -22,6 +22,7 @@ import {
   updateQuillEditorLayout
 } from './quillEditor.js';
 import { hideAllNoteButtons, recreateAllNoteButtons } from './uiUtils.js';
+import { showNoteCategoryModal } from './noteCategoryManager.js';
 
 // Render notes in the UI
 export function renderNotes() {
@@ -30,7 +31,7 @@ export function renderNotes() {
   
   const notes = getNotes();
   const notesContainer = elements.notesContainer;
-
+  const categories = getCategories();
    
   if (notes.length === 0) {
     notesContainer.innerHTML = `
@@ -58,18 +59,36 @@ export function renderNotes() {
         minute: '2-digit'
       });
       
+      // Get category information for this note
+      let categoryName = "Uncategorized";
+      let categoryIcon = "📌";
+      let categoryId = null;
+      
+      if (note.category_id) {
+        const category = categories.find(c => c.id == note.category_id);
+        if (category) {
+          categoryName = category.name;
+          categoryIcon = category.icon || '📁';
+          categoryId = category.id.toString();
+        }
+      }
+      
       // Create placeholder with properly encoded content
       // Make sure to properly sanitize and encode HTML content to prevent XSS
-      noteElement.innerHTML = `
-        <button class="note-delete" title="Delete note">🗑️</button>
+       noteElement.innerHTML = `
         <div class="note-content-placeholder" data-content="${encodeURIComponent(note.content || '')}"></div>
         <div class="note-footer">
           <div class="note-timestamp">${formattedDate}</div>
+          <div class="note-category" data-category-id="${categoryId || 'null'}">
+            <div class="note-category-icon">${categoryIcon}</div>
+            <!-- <div class="note-category-name">${categoryName}</div>  -->
+          </div>
         </div>
+        <button class="note-delete" title="Delete note">🗑️</button>
         <div class="note-expand" title="Expand/collapse note">
           <span class="expand-icon">⤢</span>
         </div>
-      `;    
+      `;
       fragment.appendChild(noteElement);
     });
     
@@ -89,6 +108,7 @@ export function renderNotes() {
       // Add event listeners
       const deleteBtn = noteElement.querySelector('.note-delete');
       const expandBtn = noteElement.querySelector('.note-expand');
+      const categoryBtn = noteElement.querySelector('.note-category');
       
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -99,67 +119,22 @@ export function renderNotes() {
         e.stopPropagation();
         handleNoteExpand(noteElement);
       });
+      
+      // Add category selection event listener using modal
+      if (categoryBtn) {
+        categoryBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showNoteCategoryModal(noteId);
+        });
+      }
     });
   }
 
   // Fix for delete button position
-  function fixDeleteButtons() {
-    console.log("Fixing delete buttons position...");
-    
-    // Get all delete buttons
-    const deleteButtons = document.querySelectorAll('.note-delete');
-    
-    deleteButtons.forEach(button => {
-      // Remove the button from its current parent
-      const originalParent = button.parentNode;
-      const noteElement = button.closest('.note');
-      
-      if (noteElement) {
-        // Move the button to be a direct child of the note element instead of inside the footer
-        originalParent.removeChild(button);
-        noteElement.appendChild(button);
-        
-        // Apply more aggressive inline styles
-        button.style.cssText = `
-          position: absolute !important;
-          top: 6px !important;
-          right: 6px !important;
-          bottom: auto !important;
-          left: auto !important;
-          z-index: 10 !important;
-          background-color: rgba(255, 255, 255, 0.7) !important;
-          color: #f44336 !important;
-          border: none !important;
-          padding: 6px !important;
-          border-radius: 4px !important;
-          cursor: pointer !important;
-          font-size: 18px !important;
-          opacity: 0;
-          width: 30px !important;
-          height: 30px !important;
-          line-height: 18px !important;
-          text-align: center !important;
-        `;
-      }
-    });
-    
-    // Handle button visibility on hover
-    document.querySelectorAll('.note').forEach(note => {
-      note.addEventListener('mouseenter', () => {
-        const btn = note.querySelector('.note-delete');
-        if (btn) btn.style.opacity = '1';
-      });
-      
-      note.addEventListener('mouseleave', () => {
-        const btn = note.querySelector('.note-delete');
-        if (!note.classList.contains('expanded') && btn) {
-          btn.style.opacity = '0';
-        }
-      });
-    });
-    
-    console.log(`Fixed ${deleteButtons.length} delete buttons`);
-  }
+  // Updated fixDeleteButtons function in ui.js
+function fixDeleteButtons() {
+  console.log("Using simplified button handler");
+}
 
   // Call this with a longer delay to ensure Quill is fully initialized
   setTimeout(fixDeleteButtons, 500);
@@ -317,6 +292,8 @@ export function renderCategories() {
 }
 
 // Toggle note expansion - UPDATED VERSION WITH FIX
+// Update to toggleNoteExpansion function in ui.js
+
 export function toggleNoteExpansion(noteElement) {
   // Create overlay if it doesn't exist yet
   let overlay = document.querySelector('.note-overlay');
@@ -341,37 +318,20 @@ export function toggleNoteExpansion(noteElement) {
     // REMOVE ALL DELETE BUTTONS EXCEPT FOR THIS NOTE
     hideAllNoteButtons();
     
-    // Add a delete button only to the expanded note if needed
-    if (!noteElement.querySelector('.note-delete')) {
-      const newBtn = document.createElement('button');
-      newBtn.className = 'note-delete';
-      newBtn.title = 'Delete note';
-      newBtn.innerHTML = '🗑️';
-      newBtn.style.cssText = `
-        position: fixed !important;
-        top: 10px !important;
-        right: 10px !important;
-        z-index: 9002 !important;
-        opacity: 1 !important;
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        display: block !important;
-        color: #f44336 !important;
-        border: none !important;
-        padding: 6px !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-        font-size: 18px !important;
-        width: 30px !important;
-        height: 30px !important;
-        line-height: 18px !important;
-        text-align: center !important;
-      `;
-      newBtn.addEventListener('click', (e) => {
+    // Ensure this note has a delete button
+    /* let deleteBtn = noteElement.querySelector('.note-delete');
+    if (!deleteBtn) {
+      deleteBtn = document.createElement('button');
+      deleteBtn.className = 'note-delete';
+      deleteBtn.title = 'Delete note';
+      deleteBtn.innerHTML = '🗑️';
+      deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         handleNoteDelete(noteId);
       });
-      noteElement.appendChild(newBtn);
+      noteElement.appendChild(deleteBtn);
     }
+    */
     
     // Expand note
     noteElement.classList.add('expanded');
@@ -416,6 +376,9 @@ export function toggleNoteExpansion(noteElement) {
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
     overlay.style.zIndex = '9000';
     
+    // Ensure delete button is visible
+    // deleteBtn.style.opacity = '1';
+    
     // Focus on editor
     focusQuillEditor(noteId);
   } else {
@@ -425,6 +388,8 @@ export function toggleNoteExpansion(noteElement) {
     
     // Remove inline styles
     noteElement.style = '';
+    
+    // Reset overlay style
     overlay.style = '';
     
     // Return note to its original container
