@@ -8,170 +8,169 @@ import { loadNotes } from './api.js';
 // Store the current note being edited for category
 let currentEditNoteId = null;
 
+
 // Show the category modal for selecting a note's category
 export function showNoteCategoryModal(noteId) {
   // Store the note ID being edited
   currentEditNoteId = noteId;
-  
-  // Get the note element
+
   const noteElement = document.querySelector(`.note[data-id="${noteId}"]`);
   if (!noteElement) return;
-  
-  // Get current category of the note
+
   const categorySelector = noteElement.querySelector('.note-category');
-  const currentCategoryId = categorySelector ? categorySelector.dataset.categoryId : 'null';
-  
-  // Get modal elements
+  const currentNoteCategoryId = categorySelector ? categorySelector.dataset.categoryId : 'null';
+
   const categoryModal = document.getElementById('categoryModal');
   const categoryModalHeader = document.getElementById('categoryModalHeader');
   const confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
-  
-  // Set modal for category selection mode
+  const cancelCategoryBtn = document.getElementById('cancelCategoryBtn'); // Make sure you have this ID on your cancel button
+
+  // Set modal title and mode
   categoryModalHeader.textContent = 'Choose Category';
-  confirmCategoryBtn.textContent = 'Select';
-  
-  // Custom attribute to identify this as note category selection
-  categoryModal.dataset.mode = 'note-category';
-  
-  // Hide elements not needed for category selection
-  document.getElementById('categoryEditId').value = '';
-  document.getElementById('categoryInput').style.display = 'none';
-  
-  // Hide the icon selector section
+  categoryModal.dataset.mode = 'note-category'; // Use this attribute to potentially style/hide elements via CSS too
+
+  // --- Hide elements not needed for category selection ---
+  document.getElementById('categoryEditId').value = ''; // Clear edit ID if reusing modal
+  const categoryInput = document.getElementById('categoryInput');
+  if(categoryInput) categoryInput.style.display = 'none'; // Hide category name input
   const iconSelector = document.querySelector('.icon-selector');
-  if (iconSelector) {
-    iconSelector.style.display = 'none';
-  }
-  
-  // Create the category selection list
+  if (iconSelector) iconSelector.style.display = 'none'; // Hide icon selector
+
+  // --- Hide the 'Confirm' button specifically for this mode ---
+  if (confirmCategoryBtn) confirmCategoryBtn.style.display = 'none';
+
+  // Create/find the category selection list container
   let categorySelectionDiv = document.getElementById('categorySelectionList');
   if (!categorySelectionDiv) {
     categorySelectionDiv = document.createElement('div');
     categorySelectionDiv.id = 'categorySelectionList';
-    categorySelectionDiv.className = 'category-selection-list';
-    
-    // Insert at the beginning of the modal content
+    categorySelectionDiv.className = 'category-selection-list'; // Add class for styling
+
     const modalContent = categoryModal.querySelector('.modal-content');
-    modalContent.insertBefore(categorySelectionDiv, modalContent.firstChild);
+    const modalActions = categoryModal.querySelector('.modal-actions'); // Find actions div
+    if (modalActions) {
+       modalContent.insertBefore(categorySelectionDiv, modalActions); // Insert list before buttons
+    } else {
+       modalContent.appendChild(categorySelectionDiv); // Fallback if no actions div
+    }
   }
-  
-  // Generate the category selection list
+
+  // --- Generate the category selection list (Revised Logic) ---
   const categories = getCategories();
-  
-  // Start with uncategorized option (only if not already uncategorized)
   let categoryListHTML = '';
-  if (currentCategoryId !== 'null') {
-    categoryListHTML += `
-      <div class="category-option" data-category-id="null">
-        <div class="category-option-icon">📌</div>
-        <div class="category-option-name">Uncategorized</div>
-      </div>
-    `;
-  }
-  
-  // Add all custom categories (except the current one)
+
+  // Always add "Uncategorized" option and mark if current
+  const isCurrentlyUncategorized = !currentNoteCategoryId || currentNoteCategoryId === 'null';
+  categoryListHTML += `
+    <div class="category-option${isCurrentlyUncategorized ? ' selected' : ''}" data-category-id="null">
+      <div class="category-option-icon">📌</div>
+      <div class="category-option-name">Uncategorized</div>
+    </div>
+  `;
+
+  // Add all available custom categories and mark if current
   categories.forEach(category => {
     const categoryId = category.id.toString();
-    if (categoryId !== currentCategoryId) {
-      categoryListHTML += `
-        <div class="category-option" data-category-id="${categoryId}">
-          <div class="category-option-icon">${category.icon || '📁'}</div>
-          <div class="category-option-name">${category.name}</div>
-        </div>
-      `;
-    }
-  });
-  
-  // Handle the case where there are no other categories
-  if (categoryListHTML === '') {
-    categoryListHTML = `
-      <div class="no-categories-message">
-        No other categories available. Create a category first.
+    const isCurrent = categoryId === currentNoteCategoryId;
+    categoryListHTML += `
+      <div class="category-option${isCurrent ? ' selected' : ''}" data-category-id="${categoryId}">
+        <div class="category-option-icon">${category.icon || '📁'}</div>
+        <div class="category-option-name">${category.name}</div>
       </div>
     `;
-    confirmCategoryBtn.disabled = true;
-  } else {
-    confirmCategoryBtn.disabled = false;
-  }
-  
+  });
+
   categorySelectionDiv.innerHTML = categoryListHTML;
-  
-  // Add event listeners to category options
-  setTimeout(() => {
+
+  // --- Add event listeners to category options (Revised Logic) ---
+  // Optional: Use setTimeout if elements aren't immediately available, but try without first.
+  // setTimeout(() => {
     document.querySelectorAll('.category-option').forEach(option => {
-      option.addEventListener('click', () => {
-        // Remove selected class from all options
-        document.querySelectorAll('.category-option').forEach(opt => {
-          opt.classList.remove('selected');
-        });
-        
-        // Add selected class to clicked option
-        option.classList.add('selected');
-        
-        // Store the selected category ID for reference
-        categoryModal.dataset.selectedCategoryId = option.dataset.categoryId;
+      option.addEventListener('click', async () => { // Make listener async
+        if (!currentEditNoteId) return; // Safety check
+
+        const selectedCategoryId = option.dataset.categoryId;
+        const noteIdToUpdate = currentEditNoteId; // Store ID before modal closes
+
+        // --- Perform action immediately ---
+        hideNoteCategoryModal(); // Close the modal
+
+        try {
+          console.log(`Attempting to change note ${noteIdToUpdate} to category ${selectedCategoryId}`);
+          await changeNoteCategory(noteIdToUpdate, selectedCategoryId); // Change the category
+        } catch (error) {
+          console.error("Failed to change category on click:", error);
+          showToast('Error changing category'); // Show feedback
+        }
       });
     });
-    
-    // Select the first option by default
-    const firstOption = document.querySelector('.category-option');
-    if (firstOption) {
-      firstOption.click();
-    }
-  }, 10);
-  
+  // }, 10); // End setTimeout if used
+
+  // --- Remove default click simulation ---
+  // const firstOption = document.querySelector('.category-option');
+  // if (firstOption) { firstOption.click(); } // REMOVED
+
   // Show the modal
   categoryModal.classList.add('active');
 }
 
-// Handle confirm button click in category selection mode
+// Handle confirm button click in category selection mode // <--- Comment indicates original purpose
 export async function handleNoteCategoryConfirm() {
   const categoryModal = document.getElementById('categoryModal');
+  // Check if NOT in note-category mode OR if currentEditNoteId is null?
+  // Original check might have been slightly different if function handled multiple modes.
+  // Let's assume the provided version focused only on note-category selection:
   if (!currentEditNoteId || !categoryModal.dataset.mode === 'note-category') return;
-  
+
   // Get the selected category
   const selectedCategoryId = categoryModal.dataset.selectedCategoryId;
   if (!selectedCategoryId) {
     hideNoteCategoryModal();
     return;
   }
-  
+
   const noteId = currentEditNoteId;
-  
+
   // Close the modal
   hideNoteCategoryModal();
-  
+
   // Change the note's category
   await changeNoteCategory(noteId, selectedCategoryId);
 }
+
 
 // Hide the category modal after selection
 export function hideNoteCategoryModal() {
   const categoryModal = document.getElementById('categoryModal');
   const iconSelector = document.querySelector('.icon-selector');
-  
+  const confirmCategoryBtn = document.getElementById('confirmCategoryBtn'); // Get button
+  const categoryInput = document.getElementById('categoryInput'); // Get input
+
+  if (!categoryModal) return; // Prevent errors if modal not found
+
   categoryModal.classList.remove('active');
-  categoryModal.dataset.mode = '';
-  categoryModal.dataset.selectedCategoryId = '';
-  
-  // Restore hidden elements
-  document.getElementById('categoryInput').style.display = '';
-  if (iconSelector) {
-    iconSelector.style.display = '';
+  categoryModal.dataset.mode = ''; // Clear the mode
+
+  // Restore potentially hidden elements for other modal uses (Add/Edit Category)
+  if(categoryInput) categoryInput.style.display = '';
+  if (iconSelector) iconSelector.style.display = '';
+
+  // --- Restore the confirm button ---
+  if(confirmCategoryBtn) {
+      confirmCategoryBtn.style.display = ''; // Make it visible again
+      confirmCategoryBtn.disabled = false; // Ensure it's enabled
   }
-  
-  // Remove the category selection list
+
+  // Remove the category selection list content
   const categorySelectionDiv = document.getElementById('categorySelectionList');
   if (categorySelectionDiv) {
-    categorySelectionDiv.innerHTML = '';
+    categorySelectionDiv.innerHTML = ''; // Clear the list
   }
-  
-  // Re-enable the confirm button
-  document.getElementById('confirmCategoryBtn').disabled = false;
-  
-  // Clear the current edit note ID
+
+  // Clear the current edit note ID - IMPORTANT
   currentEditNoteId = null;
 }
+
 
 // Change a note's category
 export async function changeNoteCategory(noteId, categoryId) {
