@@ -27,7 +27,9 @@ export const elements = {
   toast: document.getElementById('toast'),
   logoutBtn: document.getElementById('logoutBtn'),
   darkModeToggle: document.getElementById('darkModeToggle'),
-  sidebarFooter: document.querySelector('.sidebar-footer')
+  sidebarFooter: document.querySelector('.sidebar-footer'),
+
+  usernameDisplay: document.getElementById('usernameDisplay')
 };
 
 // Initialize state
@@ -41,6 +43,14 @@ export function initState() {
   }
   
   return state;
+}
+
+export function getCurrentUser() {
+  return state.currentUser;
+}
+
+export function setCurrentUser(user) {
+  state.currentUser = user;
 }
 
 // State getters

@@ -255,3 +255,56 @@ body.dark-mode .delete-all-btn:hover {
         max-width: 50%; /* Prevent long names from overlapping buttons */
     }
 }
+
+
+/* User info and username display in header */
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    position: relative;
+}
+
+.username-display {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color);
+    padding: 6px 12px;
+    background-color: rgba(98, 0, 238, 0.1);
+    border-radius: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .notes-header {
+        justify-content: space-between;
+        padding: 12px 15px;
+        position: relative;
+    }
+    
+    .user-info {
+        position: absolute;
+        top: 50%;
+        right: 60px; /* Space for add note button */
+        transform: translateY(-50%);
+        margin-right: 0;
+        z-index: 2; /* Above the centered category title */
+    }
+    
+    .username-display {
+        font-size: 12px;
+        padding: 4px 8px;
+        max-width: 100px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .username-display {
+        max-width: 80px;
+    }
+}

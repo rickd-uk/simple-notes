@@ -1,9 +1,32 @@
 // main.js - Entry point for the application
-import { initState } from './state.js';
-import { loadCategories, loadNotes, preloadAdjacentCategories } from './api.js';
+import { initState, setCurrentUser, elements } from './state.js';
+import { loadCategories, loadNotes, preloadAdjacentCategories, getCurrentUser } from './api.js';
 import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
 import { initDarkMode } from './darkMode.js';
+
+// Function to update the username display
+async function updateUsernameDisplay() {
+  try {
+    const user = await getCurrentUser();
+    if (user) {
+      console.log('User data retrieved:', user);
+      // Set user in state
+      setCurrentUser(user);
+      
+      // Update username display
+      if (elements.usernameDisplay) {
+        elements.usernameDisplay.textContent = `${user.username}`;
+      }
+    } else {
+      // If no user is found, redirect to login
+      window.location.href = '/login.html';
+    }
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    elements.usernameDisplay.textContent = 'Unknown User';
+  }
+}
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,6 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Set up mobile navigation
   setupMobileNavigation();
+
+  await updateUsernameDisplay();
   
   // Load initial data
   await loadCategories();
