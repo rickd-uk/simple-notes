@@ -412,11 +412,35 @@ export async function deleteAllCategoriesSequential() {
   }
 }
 
-// Log out the user
+
+
+// Get current user info
+export async function getCurrentUser() {
+  try {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/auth/me`);
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Not authenticated
+        return null;
+      }
+      throw new Error('Failed to fetch user information');
+    }
+    
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    return null;
+  }
+}
+
+// Update the logout function to use the new endpoint
 export async function logout() {
   try {
     const apiUrl = getApiUrl();
-    await fetch(`${apiUrl}/logout`, {
+    await fetch(`${apiUrl}/auth/logout`, {
       method: 'POST'
     });
     

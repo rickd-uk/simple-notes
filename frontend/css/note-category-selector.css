@@ -213,6 +213,17 @@
 }
 
 
+
+body.dark-mode .note:not(.expanded) .note-delete {
+    /* Styles here */
+  background-color: transparent !important; /* Correct syntax, use ONLY if needed */
+  color: #DADCE0 !important;               /* Correct syntax, use ONLY if needed */
+  border: none !important;                  /* Correct syntax, use ONLY if needed */
+}
+
+
+
+
 /* --- Dark mode support --- */
 body.dark-mode .note-category {
   background-color: rgba(187, 134, 252, 0.1);

@@ -12,7 +12,27 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="css/dark-mode.css">
+    
+    <style>
+        .signup-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .signup-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .login-form {
+            padding-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -24,15 +44,8 @@
                 <input type="password" id="password" class="login-input" placeholder="Password" autocomplete="current-password">
                 <button type="button" id="loginBtn" class="login-btn">Login</button>
             </form>
-            <div class="dark-mode-toggle" style="justify-content: center; margin-top: 20px; border-top: none;">
-                <span class="dark-mode-label" style="margin-right: 10px;">
-                    <span class="theme-icon-light">☀️ Light</span>
-                    <span class="theme-icon-dark">🌙 Dark</span>
-                </span>
-                <label class="switch">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider"></span>
-                </label>
+            <div class="signup-link">
+                Don't have an account? <a href="signup.html">Create one</a>
             </div>
         </div>
     </div>
@@ -42,30 +55,14 @@
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
             const loginError = document.getElementById('loginError');
-            const darkModeToggle = document.getElementById('darkModeToggle');
-
-            // Initialize dark mode
-            const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-            if (darkModeEnabled) {
-                document.body.classList.add('dark-mode');
-                darkModeToggle.checked = true;
-            }
             
-            // Dark mode toggle
-            darkModeToggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    document.body.classList.add('dark-mode');
-                    localStorage.setItem('darkMode', 'true');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    localStorage.setItem('darkMode', 'false');
-                }
-            });
+            // Hide error message initially
+            loginError.style.display = 'none';
             
             // Check if already authenticated
             const checkAuth = async () => {
                 try {
-                    const response = await fetch('/api/notes');
+                    const response = await fetch('/api/auth/me');
                     if (response.ok) {
                         // Already authenticated
                         window.location.href = '/';
@@ -82,12 +79,13 @@
                 const password = passwordInput.value;
                 
                 if (!username || !password) {
+                    loginError.textContent = 'Username and password are required';
                     loginError.style.display = 'block';
                     return;
                 }
                 
                 try {
-                    const response = await fetch('/api/login', {
+                    const response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
@@ -96,10 +94,13 @@
                     if (response.ok) {
                         window.location.href = '/';
                     } else {
+                        const data = await response.json();
+                        loginError.textContent = data.error || 'Invalid username or password';
                         loginError.style.display = 'block';
                     }
                 } catch (error) {
                     console.error('Login error:', error);
+                    loginError.textContent = 'An error occurred during login';
                     loginError.style.display = 'block';
                 }
             };
