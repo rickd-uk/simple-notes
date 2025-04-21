@@ -115,3 +115,9 @@ export function focusQuillEditor(noteId) {
 export function clearQuillEditors() {
   quillEditors = {};
 }
+
+// Make quillEditors globally accessible via a function
+// Safer than exposing the variable directly
+export function getAllQuillEditors() {
+  return quillEditors;
+}

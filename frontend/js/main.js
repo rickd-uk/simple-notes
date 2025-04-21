@@ -4,6 +4,7 @@ import { loadCategories, loadNotes, preloadAdjacentCategories, getCurrentUser } 
 import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
 import { initDarkMode } from './darkMode.js';
+import { initToolbarToggle } from './toolbarToggle.js';
 
 // Function to update the username display
 async function updateUsernameDisplay() {
@@ -52,6 +53,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load initial data
   await loadCategories();
   await loadNotes();
+  
+  // Initialize the global toolbar toggle AFTER notes are loaded
+  setTimeout(() => {
+    initToolbarToggle();
+  }, 500);
   
   // Preload adjacent categories after initial load
   setTimeout(() => {

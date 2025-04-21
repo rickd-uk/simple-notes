@@ -1,4 +1,4 @@
-// ui.js - UI rendering functions
+// ui.js - UI rendering functions with toolbar toggle integration
 import { 
   getNotes, 
   getCategories, 
@@ -128,6 +128,7 @@ export function renderNotes() {
         });
       }
     });
+    
   }
 
   // Fix for delete button position
@@ -318,21 +319,6 @@ export function toggleNoteExpansion(noteElement) {
     // REMOVE ALL DELETE BUTTONS EXCEPT FOR THIS NOTE
     hideAllNoteButtons();
     
-    // Ensure this note has a delete button
-    /* let deleteBtn = noteElement.querySelector('.note-delete');
-    if (!deleteBtn) {
-      deleteBtn = document.createElement('button');
-      deleteBtn.className = 'note-delete';
-      deleteBtn.title = 'Delete note';
-      deleteBtn.innerHTML = '🗑️';
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        handleNoteDelete(noteId);
-      });
-      noteElement.appendChild(deleteBtn);
-    }
-    */
-    
     // Expand note
     noteElement.classList.add('expanded');
     overlay.classList.add('active');
@@ -376,8 +362,6 @@ export function toggleNoteExpansion(noteElement) {
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
     overlay.style.zIndex = '9000';
     
-    // Ensure delete button is visible
-    // deleteBtn.style.opacity = '1';
     
     // Focus on editor
     focusQuillEditor(noteId);
@@ -400,6 +384,8 @@ export function toggleNoteExpansion(noteElement) {
     
     // RESTORE ALL DELETE BUTTONS
     setTimeout(recreateAllNoteButtons, 50);
+    
+    
   }
   
   // Update Quill editor layout after expanding/collapsing
