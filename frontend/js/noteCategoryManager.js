@@ -4,6 +4,7 @@ import { getCategories, getCurrentCategoryId } from './state.js';
 import { updateNote } from './api.js';
 import { showToast } from './uiUtils.js';
 import { loadNotes } from './api.js';
+import { getQuillEditor } from './quillEditor.js'; // Import the function to get Quill editors
 
 // Store the current note being edited for category
 let currentEditNoteId = null;
@@ -83,43 +84,34 @@ export function showNoteCategoryModal(noteId) {
   categorySelectionDiv.innerHTML = categoryListHTML;
 
   // --- Add event listeners to category options (Revised Logic) ---
-  // Optional: Use setTimeout if elements aren't immediately available, but try without first.
-  // setTimeout(() => {
-    document.querySelectorAll('.category-option').forEach(option => {
-      option.addEventListener('click', async () => { // Make listener async
-        if (!currentEditNoteId) return; // Safety check
+  document.querySelectorAll('.category-option').forEach(option => {
+    option.addEventListener('click', async () => { // Make listener async
+      if (!currentEditNoteId) return; // Safety check
 
-        const selectedCategoryId = option.dataset.categoryId;
-        const noteIdToUpdate = currentEditNoteId; // Store ID before modal closes
+      const selectedCategoryId = option.dataset.categoryId;
+      const noteIdToUpdate = currentEditNoteId; // Store ID before modal closes
 
-        // --- Perform action immediately ---
-        hideNoteCategoryModal(); // Close the modal
+      // --- Perform action immediately ---
+      hideNoteCategoryModal(); // Close the modal
 
-        try {
-          console.log(`Attempting to change note ${noteIdToUpdate} to category ${selectedCategoryId}`);
-          await changeNoteCategory(noteIdToUpdate, selectedCategoryId); // Change the category
-        } catch (error) {
-          console.error("Failed to change category on click:", error);
-          showToast('Error changing category'); // Show feedback
-        }
-      });
+      try {
+        console.log(`Attempting to change note ${noteIdToUpdate} to category ${selectedCategoryId}`);
+        await changeNoteCategory(noteIdToUpdate, selectedCategoryId); // Change the category
+      } catch (error) {
+        console.error("Failed to change category on click:", error);
+        showToast('Error changing category'); // Show feedback
+      }
     });
-  // }, 10); // End setTimeout if used
-
-  // --- Remove default click simulation ---
-  // const firstOption = document.querySelector('.category-option');
-  // if (firstOption) { firstOption.click(); } // REMOVED
+  });
 
   // Show the modal
   categoryModal.classList.add('active');
 }
 
-// Handle confirm button click in category selection mode // <--- Comment indicates original purpose
+// Handle confirm button click in category selection mode
 export async function handleNoteCategoryConfirm() {
   const categoryModal = document.getElementById('categoryModal');
-  // Check if NOT in note-category mode OR if currentEditNoteId is null?
-  // Original check might have been slightly different if function handled multiple modes.
-  // Let's assume the provided version focused only on note-category selection:
+  // Check if NOT in note-category mode OR if currentEditNoteId is null
   if (!currentEditNoteId || !categoryModal.dataset.mode === 'note-category') return;
 
   // Get the selected category
@@ -179,9 +171,9 @@ export async function changeNoteCategory(noteId, categoryId) {
     const noteElement = document.querySelector(`.note[data-id="${noteId}"]`);
     if (!noteElement) return false;
     
-    // Get content from Quill editor if available
+    // Get content from Quill editor if available - FIXED: Use the proper function to get Quill editors
     let content = '';
-    const quillEditor = window.quillEditors && window.quillEditors[noteId];
+    const quillEditor = getQuillEditor(noteId); // Use our imported function to get the editor
     
     if (quillEditor) {
       content = quillEditor.root.innerHTML;
@@ -190,6 +182,18 @@ export async function changeNoteCategory(noteId, categoryId) {
       const textarea = noteElement.querySelector('.note-content');
       content = textarea ? textarea.value : '';
     }
+    
+    // Make sure we have content
+    if (!content || content.trim() === '') {
+      console.warn('Note content appears to be empty, trying to preserve existing content');
+      // Try to get content from note's data attribute as a last resort
+      const contentPlaceholder = noteElement.querySelector('.note-content-placeholder');
+      if (contentPlaceholder && contentPlaceholder.dataset.content) {
+        content = decodeURIComponent(contentPlaceholder.dataset.content);
+      }
+    }
+    
+    console.log(`Updating note ${noteId} with content length: ${content.length}`);
     
     // Prepare the category ID for the API
     // null for uncategorized, actual ID for categories
@@ -258,7 +262,6 @@ export async function changeNoteCategory(noteId, categoryId) {
 }
 
 // Update a note's category display in the UI
-// Fixed update category display function
 export function updateNoteCategoryDisplay(noteElement, categoryId) {
   const categories = getCategories();
   const noteCategoryElement = noteElement.querySelector('.note-category');
