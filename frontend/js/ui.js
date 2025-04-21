@@ -232,7 +232,7 @@ export function renderCategories() {
   `;
   
   // Update current category label
-  if (currentCategoryId === 'all') {
+ /*  if (currentCategoryId === 'all') {
     currentCategoryElement.textContent = 'All Notes';
   } else if (currentCategoryId === 'uncategorized') {
     currentCategoryElement.textContent = 'Uncategorized';
@@ -242,6 +242,7 @@ export function renderCategories() {
       currentCategoryElement.textContent = category.name;
     }
   }
+  */
 
   // Add bulk delete button to notes header if not already present
   const notesHeader = document.querySelector('.notes-header');

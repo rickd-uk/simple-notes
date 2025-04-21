@@ -34,6 +34,7 @@ body {
 .empty-icon,
 .note-delete,
 .note-expand,
+.theme-icon-dark,
 .btn-edit,
 .btn-delete {
   user-select: none;
