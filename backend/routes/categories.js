@@ -92,6 +92,75 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// --- Route to delete ALL categories ---
+// DELETE /api/categories/all
+router.delete('/all', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized: User ID not found' });
+    }
+
+    // ***** ADD THIS ADMIN HANDLING BLOCK *****
+    if (userId === 'admin') {
+      console.log('Handling delete all for admin user...'); // Add log for confirmation
+
+      // Option A: Delete categories/notes where user_id IS NULL
+      // (Adjust this logic based on your exact requirement for admin)
+
+      // Step 1 (Admin): Update notes associated with NULL user categories
+      // This query might need adjustment. Do admin-created notes have user_id=NULL?
+      // Or maybe update notes whose category_id points to a category with user_id=NULL?
+      // Let's assume we target notes with user_id IS NULL for now:
+      await db.query(
+        'UPDATE notes SET category_id = NULL WHERE user_id IS NULL'
+        // Or maybe: 'UPDATE notes SET category_id = NULL WHERE category_id IN (SELECT id FROM categories WHERE user_id IS NULL)'
+      );
+
+      // Step 2 (Admin): Delete categories associated with NULL user
+      const deleteResult = await db.query(
+        'DELETE FROM categories WHERE user_id IS NULL RETURNING id'
+      );
+
+      console.log(`Admin deleted ${deleteResult.rowCount} categories with NULL user_id.`);
+      return res.json({
+        message: `Admin operation: Deleted categories not associated with a specific user. Count: ${deleteResult.rowCount}`
+      });
+      // Make sure to RETURN here to exit the admin block
+    }
+    // ***** END OF ADMIN HANDLING BLOCK *****
+
+
+    // --- Logic for REGULAR (non-admin) users ---
+    console.log(`Handling delete all for regular user: ${userId}`); // Add log
+
+    // Step 1: Update all notes belonging to this user
+    await db.query(
+      'UPDATE notes SET category_id = NULL WHERE user_id = $1',
+      [userId] // For regular users, userId should be an integer here
+    );
+
+    // Step 2: Delete all categories belonging to this user
+    const deleteResult = await db.query(
+      'DELETE FROM categories WHERE user_id = $1 RETURNING id',
+      [userId] // For regular users, userId should be an integer here
+    );
+
+    console.log(`User ${userId} deleted ${deleteResult.rowCount} categories.`);
+    // Step 3: Respond with success
+    res.json({
+      message: `All categories deleted for the user. Count: ${deleteResult.rowCount}`
+    });
+
+  } catch (err) {
+    console.error('Error deleting all categories:', err);
+    // Log the specific userId that caused the error if possible
+    console.error(`Error occurred for userId: ${req.user ? req.user.userId : 'unknown'}`);
+    res.status(500).json({ error: 'Server error while deleting all categories' });
+  }
+});
+
 // Delete a category for the current user and update related notes
 router.delete('/:id', async (req, res) => {
   try {
@@ -138,5 +207,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 module.exports = router;
