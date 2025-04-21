@@ -1,5 +1,6 @@
 // quillEditor.js - Quill rich text editor integration
 import { handleNoteInput } from './eventHandlers.js';
+import { getToolbarsVisible } from './toolbarToggle.js';
 
 // Store Quill editor instances
 let quillEditors = {};
@@ -78,7 +79,37 @@ export function createQuillEditor(noteElement, noteId, initialContent) {
     handleNoteInput(noteId, content);
   });
   
+  // Apply current toolbar visibility state to the new editor
+  applyToolbarVisibility(noteId);
+  
   return quill;
+}
+
+// Apply current toolbar visibility to a specific editor
+export function applyToolbarVisibility(noteId) {
+  const toolbarsVisible = getToolbarsVisible();
+  const editorContainer = document.querySelector(`.note[data-id="${noteId}"] .note-editor-container`);
+  
+  if (editorContainer) {
+    const toolbar = editorContainer.querySelector('.ql-toolbar');
+    const editor = editorContainer.querySelector('.ql-container');
+    
+    if (toolbar) {
+      toolbar.style.display = toolbarsVisible ? '' : 'none';
+    }
+    
+    if (editor) {
+      editor.style.marginTop = toolbarsVisible ? '' : '0';
+      editor.style.height = toolbarsVisible ? '' : 'calc(100% - 10px)';
+    }
+  }
+}
+
+// Apply current toolbar visibility to all editors
+export function applyToolbarVisibilityToAll() {
+  for (const noteId in quillEditors) {
+    applyToolbarVisibility(noteId);
+  }
 }
 
 // Clean up Quill editor instances when notes are removed

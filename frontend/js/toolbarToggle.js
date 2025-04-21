@@ -1,7 +1,7 @@
 // toolbarToggle.js - Global toolbar toggle functionality
 
-// Flag to track global toolbar visibility state
-let toolbarsVisible = true;
+// Flag to track global toolbar visibility state - make this accessible to the rest of the application
+export let toolbarsVisible = true;
 
 /**
  * Toggle visibility of all Quill toolbars
@@ -53,11 +53,20 @@ export function initToolbarToggle() {
   // Check if we have a saved preference
   const savedVisibility = localStorage.getItem('toolbarsVisible');
   if (savedVisibility !== null) {
-    toggleToolbars(savedVisibility === 'true');
+    toolbarsVisible = savedVisibility === 'true';
+    toggleToolbars(toolbarsVisible);
   }
   
   // Create the global toggle button if it doesn't exist
   createGlobalToggleButton();
+}
+
+/**
+ * Get current toolbar visibility state
+ * This function lets other modules check if toolbars should be visible
+ */
+export function getToolbarsVisible() {
+  return toolbarsVisible;
 }
 
 /**
@@ -115,5 +124,4 @@ function createGlobalToggleButton() {
       notesHeader.appendChild(toggleButton);
     }
   }
-  
 }

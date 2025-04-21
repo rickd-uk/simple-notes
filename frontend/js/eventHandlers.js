@@ -38,7 +38,7 @@ import {
 import { getCategories } from './state.js';
 import {
   destroyQuillEditor,
-  focusQuillEditor
+  focusQuillEditor, applyToolbarVisibility
 } from './quillEditor.js';
 import { toggleDarkMode } from './darkMode.js';
 import { 
@@ -207,6 +207,10 @@ export async function createNewNote() {
       const firstNote = document.querySelector('.note');
       if (firstNote) {
         const noteId = firstNote.dataset.id;
+
+        // Apply current toolbar visibility setting to the new note
+        applyToolbarVisibility(noteId);
+
         focusQuillEditor(noteId);
       }
     }, 100); // Slightly longer delay to ensure Quill is fully initialized

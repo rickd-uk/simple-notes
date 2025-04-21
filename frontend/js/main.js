@@ -5,6 +5,7 @@ import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
 import { initDarkMode } from './darkMode.js';
 import { initToolbarToggle } from './toolbarToggle.js';
+import { applyToolbarVisibilityToAll } from './quillEditor.js';
 
 // Function to update the username display
 async function updateUsernameDisplay() {
@@ -57,10 +58,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the global toolbar toggle AFTER notes are loaded
   setTimeout(() => {
     initToolbarToggle();
+    
+    // Make sure toolbar visibility is applied to all editors after a brief delay
+    setTimeout(() => {
+      applyToolbarVisibilityToAll();
+    }, 100);
   }, 500);
   
   // Preload adjacent categories after initial load
   setTimeout(() => {
     preloadAdjacentCategories();
   }, 2000);
+  
+  // Add MutationObserver to detect new notes and maintain toolbar visibility
+  const notesContainer = document.getElementById('notesContainer');
+  if (notesContainer) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          // New notes were added, ensure toolbar visibility is maintained
+          setTimeout(() => {
+            applyToolbarVisibilityToAll();
+          }, 50);
+        }
+      });
+    });
+    
+    // Start observing the notes container for changes
+    observer.observe(notesContainer, { 
+      childList: true,
+      subtree: true 
+    });
+  }
 });
