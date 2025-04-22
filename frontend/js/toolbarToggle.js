@@ -37,8 +37,8 @@ export function toggleToolbars(visible) {
     }
   });
   
-  // Update toggle button appearance based on state
-  updateToggleButtonAppearance();
+  // Update toggle switch appearance
+  updateToggleSwitchAppearance();
   
   // Set attribute on body for easy CSS targeting
   document.body.setAttribute('data-toolbars-hidden', !toolbarsVisible);
@@ -54,11 +54,13 @@ export function initToolbarToggle() {
   const savedVisibility = localStorage.getItem('toolbarsVisible');
   if (savedVisibility !== null) {
     toolbarsVisible = savedVisibility === 'true';
-    toggleToolbars(toolbarsVisible);
   }
   
-  // Create the global toggle button if it doesn't exist
-  createGlobalToggleButton();
+  // Create the toggle switch if it doesn't exist
+  createToolbarToggleSwitch();
+  
+  // Apply the current visibility state
+  toggleToolbars(toolbarsVisible);
 }
 
 /**
@@ -70,58 +72,71 @@ export function getToolbarsVisible() {
 }
 
 /**
- * Update the appearance of toolbar toggle button based on current state
+ * Create the toggle switch in the UI
  */
-function updateToggleButtonAppearance() {
-  const toggleButton = document.getElementById('globalToolbarToggle');
-  if (toggleButton) {
-    // Change icon and text based on toolbar visibility
-    toggleButton.innerHTML = toolbarsVisible ? 
-      '<span title="Hide formatting toolbars">🔼</span> Formatting Toolbars' : 
-      '<span title="Show formatting toolbars">🔽</span> Formatting Toolbars';
-    toggleButton.setAttribute('aria-label', toolbarsVisible ? 'Hide toolbars' : 'Show toolbars');
-    toggleButton.title = toolbarsVisible ? 'Hide formatting toolbars' : 'Show formatting toolbars';
+function createToolbarToggleSwitch() {
+  // Check if the switch already exists
+  if (document.querySelector('.toolbar-toggle')) return;
+  
+  // Create the container
+  const toggleContainer = document.createElement('div');
+  toggleContainer.className = 'toolbar-toggle';
+  
+  // Create the label
+  const toggleLabel = document.createElement('span');
+  toggleLabel.className = 'toolbar-label';
+  toggleLabel.textContent = 'Formatting Toolbar';
+  
+  // Create the switch container
+  const switchContainer = document.createElement('label');
+  switchContainer.className = 'switch';
+  
+  // Create the checkbox input
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.id = 'toolbarToggle';
+  checkbox.checked = toolbarsVisible;
+  
+  // Create the slider element
+  const slider = document.createElement('span');
+  slider.className = 'slider';
+  
+  // Assemble the switch
+  switchContainer.appendChild(checkbox);
+  switchContainer.appendChild(slider);
+  
+  // Assemble the toggle container
+  toggleContainer.appendChild(toggleLabel);
+  toggleContainer.appendChild(switchContainer);
+  
+  // Add click event to checkbox
+  checkbox.addEventListener('change', () => {
+    toggleToolbars(checkbox.checked);
+  });
+  
+  // Find where to place the toggle
+  const spellcheckToggle = document.querySelector('.spellcheck-toggle');
+  if (spellcheckToggle) {
+    // Insert after the spellcheck toggle
+    spellcheckToggle.parentNode.insertBefore(toggleContainer, spellcheckToggle.nextSibling);
+  } else {
+    // Fallback - add near dark mode toggle
+    const darkModeToggle = document.querySelector('.dark-mode-toggle');
+    if (darkModeToggle) {
+      darkModeToggle.parentNode.insertBefore(toggleContainer, darkModeToggle);
+    }
   }
+  
+  // Expose toggle function globally for easier debugging
+  window.toggleToolbars = toggleToolbars;
 }
 
 /**
- * Create a single global toggle button in the UI
+ * Update toggle switch appearance based on current state
  */
-function createGlobalToggleButton() {
-  // Check if the button already exists
-  if (document.getElementById('globalToolbarToggle')) return;
-  
-  // Create the button element
-  const toggleButton = document.createElement('button');
-  toggleButton.id = 'globalToolbarToggle';
-  toggleButton.className = 'global-toolbar-toggle';
-  toggleButton.title = toolbarsVisible ? 'Hide formatting toolbars' : 'Show formatting toolbars';
-  toggleButton.innerHTML = toolbarsVisible ? 
-     '<span title="Hide formatting toolbars">🔼</span> Formatting Toolbars' : 
-    '<span title="Show formatting toolbars">🔽</span> Formatting Toolbars';
-
-      // Add click event to toggle toolbars
-  toggleButton.addEventListener('click', () => {
-    toggleToolbars();
-  });
- 
-  // Place the button above the dark mode toggle in the sidebar
-  const darkModeToggle = document.querySelector('.dark-mode-toggle');
-  if (darkModeToggle) {
-    // create a new container for the toolbar toggle 
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'toolbar-toggle-container';
-
-    // Add button to container 
-    toggleContainer.appendChild(toggleButton);
-
-    // Insert container before the dark mode toggle 
-    darkModeToggle.parentNode.insertBefore(toggleContainer, darkModeToggle);
-  } else {
-    // fallback - add to notes header if dark mode toggle not found 
-    const notesHeader = document.querySelector('.notes-header');
-    if (notesHeader) {
-      notesHeader.appendChild(toggleButton);
-    }
+function updateToggleSwitchAppearance() {
+  const toggleCheckbox = document.getElementById('toolbarToggle');
+  if (toggleCheckbox) {
+    toggleCheckbox.checked = toolbarsVisible;
   }
 }
