@@ -1,0 +1,150 @@
+/* CSS for multi-add category modal */
+
+/* Basic modal button styles */
+.modal-btn {
+    padding: 8px 16px;
+    margin-left: 10px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.modal-btn:active {
+    transform: translateY(1px);
+}
+
+/* Style confirmation button to be more prominent in add mode */
+#categoryModal[data-mode="add"] .modal-btn-confirm {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+#categoryModal[data-mode="add"] .modal-btn-confirm:hover {
+    background-color: #5000d2;
+}
+
+/* Style cancel button to look like a close button in add mode */
+#categoryModal[data-mode="add"] .modal-btn-cancel {
+    background-color: #757575;
+    color: white;
+    border: none;
+}
+
+#categoryModal[data-mode="add"] .modal-btn-cancel:hover {
+    background-color: #616161;
+}
+
+/* Normal cancel button style for edit mode */
+#categoryModal[data-mode="edit"] .modal-btn-cancel {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid #e0e0e0;
+}
+
+#categoryModal[data-mode="edit"] .modal-btn-cancel:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Update button style for edit mode */
+#categoryModal[data-mode="edit"] .modal-btn-confirm {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+#categoryModal[data-mode="edit"] .modal-btn-confirm:hover {
+    background-color: #5000d2;
+}
+
+/* Style the modal header differently based on mode */
+#categoryModal[data-mode="add"] .modal-header {
+    color: var(--primary-color);
+    font-size: 20px;
+}
+
+#categoryModal[data-mode="edit"] .modal-header {
+    color: #333333;
+    font-size: 18px;
+}
+
+/* Make modal content a bit taller to accommodate multiple adds */
+#categoryModal .modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Modal actions container */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* Add subtle animation to show feedback when category is added */
+@keyframes categoryAdded {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+
+.category-added-animation {
+    animation: categoryAdded 0.3s ease-in-out;
+}
+
+/* Add a subtle highlight to the input field when focusing after a category is added */
+#categoryModal[data-mode="add"] .modal-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.1);
+}
+
+/* Dark mode support */
+body.dark-mode #categoryModal[data-mode="add"] .modal-btn-cancel {
+    background-color: #424242;
+}
+
+body.dark-mode #categoryModal[data-mode="add"] .modal-btn-cancel:hover {
+    background-color: #555555;
+}
+
+body.dark-mode #categoryModal[data-mode="edit"] .modal-btn-cancel {
+    background-color: transparent;
+    color: var(--text-color);
+    border-color: #444444;
+}
+
+body.dark-mode #categoryModal[data-mode="edit"] .modal-btn-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode #categoryModal[data-mode="add"] .modal-header {
+    color: var(--primary-color);
+}
+
+body.dark-mode #categoryModal[data-mode="edit"] .modal-header {
+    color: #e0e0e0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    #categoryModal .modal-actions {
+        flex-direction: row; /* Keep buttons on same row */
+    }
+    
+    .modal-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    #categoryModal .modal-content {
+        width: 90%;
+        padding: 15px;
+    }
+    
+    #categoryModal .modal-header {
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+}

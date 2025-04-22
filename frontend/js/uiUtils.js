@@ -46,7 +46,7 @@ export function recreateAllNoteButtons() {
   });
 }
 
-// Show category modal with button hiding - UPDATED WITH FIX
+// Show category modal with modified buttons for multi-add
 export function showCategoryModal(isEdit = false, categoryId = null, categoryName = '', categoryIcon = '📁') {
   const {
     categoryModal,
@@ -57,11 +57,28 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
     categoryEditId
   } = elements;
   
+  // Check if all required elements exist
+  if (!categoryModal || !categoryModalHeader || !confirmCategoryBtn) {
+    console.error('Missing required elements for category modal');
+    return;
+  }
+  
   // HIDE ALL DELETE BUTTONS
   hideAllNoteButtons();
   
-  categoryModalHeader.textContent = isEdit ? 'Edit Category' : 'Add New Category';
+  // Change text based on mode
+  categoryModalHeader.textContent = isEdit ? 'Edit Category' : 'Add Categories';
   confirmCategoryBtn.textContent = isEdit ? 'Update' : 'Add';
+  
+  // Modify Cancel button's text and behavior in Add Categories mode if it exists
+  const cancelCategoryBtn = elements.cancelCategoryBtn || document.getElementById('cancelCategoryBtn');
+  if (cancelCategoryBtn) {
+    if (!isEdit) {
+      cancelCategoryBtn.textContent = 'Close';
+    } else {
+      cancelCategoryBtn.textContent = 'Cancel';
+    }
+  }
   
   // Reset icon selection
   document.querySelectorAll('.icon-item').forEach(item => {
@@ -94,6 +111,9 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
   categoryModal.style.zIndex = '9000';
   categoryModal.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
   
+  // Set data attribute for CSS targeting
+  categoryModal.dataset.mode = isEdit ? 'edit' : 'add';
+  
   // Make modal content stand out
   const modalContent = categoryModal.querySelector('.modal-content');
   if (modalContent) {
@@ -105,7 +125,7 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
   categoryInput.focus();
 }
 
-// Hide category modal and restore buttons - UPDATED WITH FIX
+// Hide category modal and restore buttons
 export function hideCategoryModal() {
   const {
     categoryModal,
@@ -114,10 +134,22 @@ export function hideCategoryModal() {
     categoryEditId
   } = elements;
   
+  if (!categoryModal) return;
+  
   categoryModal.classList.remove('active');
-  categoryInput.value = '';
-  categoryIconInput.value = '📁';
-  categoryEditId.value = '';
+  
+  if (categoryInput) categoryInput.value = '';
+  if (categoryIconInput) categoryIconInput.value = '📁';
+  if (categoryEditId) categoryEditId.value = '';
+  
+  // Reset cancel button text for other modals if it exists
+  const cancelCategoryBtn = elements.cancelCategoryBtn || document.getElementById('cancelCategoryBtn');
+  if (cancelCategoryBtn) {
+    cancelCategoryBtn.textContent = 'Cancel';
+  }
+  
+  // Remove data-mode attribute
+  categoryModal.removeAttribute('data-mode');
   
   // Reset modal styles
   categoryModal.style = '';

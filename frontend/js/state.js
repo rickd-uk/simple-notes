@@ -21,7 +21,9 @@ export const elements = {
   categoryModalHeader: document.getElementById('categoryModalHeader'),
   categoryInput: document.getElementById('categoryInput'),
   categoryIconInput: document.getElementById('categoryIconInput'),
+
   cancelCategoryBtn: document.getElementById('cancelCategoryBtn'),
+
   confirmCategoryBtn: document.getElementById('confirmCategoryBtn'),
   categoryEditId: document.getElementById('categoryEditId'),
   toast: document.getElementById('toast'),
@@ -130,4 +132,38 @@ export function updateCategoryInState(categoryId, updatedCategory) {
 // Remove a category from the state
 export function removeCategoryFromState(categoryId) {
   state.categories = state.categories.filter(cat => cat.id.toString() !== categoryId);
+}
+
+
+// Helper function to check if modal elements exist and create them if needed
+export function ensureModalElements() {
+  // Check if we need to re-fetch the cancel button (might have been added dynamically)
+  if (!elements.cancelCategoryBtn) {
+    elements.cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
+  }
+  
+  // Re-fetch other potentially missing elements
+  if (!elements.categoryModal) {
+    elements.categoryModal = document.getElementById('categoryModal');
+  }
+  
+  if (!elements.categoryModalHeader) {
+    elements.categoryModalHeader = document.getElementById('categoryModalHeader');
+  }
+  
+  if (!elements.confirmCategoryBtn) {
+    elements.confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
+  }
+  
+  if (!elements.categoryInput) {
+    elements.categoryInput = document.getElementById('categoryInput');
+  }
+  
+  if (!elements.categoryIconInput) {
+    elements.categoryIconInput = document.getElementById('categoryIconInput');
+  }
+  
+  if (!elements.categoryEditId) {
+    elements.categoryEditId = document.getElementById('categoryEditId');
+  }
 }

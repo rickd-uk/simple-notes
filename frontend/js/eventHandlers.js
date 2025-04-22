@@ -49,14 +49,14 @@ import {
   changeNoteCategory
 } from './noteCategoryManager.js';
 
-// Setup all event listeners
+// Setup all event listeners with null check for cancelCategoryBtn
 export function setupEventListeners() {
   const {
     addNoteBtn,
     addCategoryBtn,
     categoryModal,
     categoryInput,
-    cancelCategoryBtn,
+    cancelCategoryBtn, // This might be null
     confirmCategoryBtn,
     sidebarFooter,
     logoutBtn,
@@ -64,12 +64,16 @@ export function setupEventListeners() {
   } = elements;
   
   // Add note button
-  addNoteBtn.addEventListener('click', createNewNote);
+  if (addNoteBtn) {
+    addNoteBtn.addEventListener('click', createNewNote);
+  }
 
   // Add category button
-  addCategoryBtn.addEventListener('click', () => {
-    showCategoryModal();
-  });
+  if (addCategoryBtn) {
+    addCategoryBtn.addEventListener('click', () => {
+      showCategoryModal();
+    });
+  }
 
   // Dark mode toggle
   if (darkModeToggle) {
@@ -93,32 +97,41 @@ export function setupEventListeners() {
   });
 
   // Handle Enter key in category modal
-  categoryInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent form submission if inside a form
-      if (elements.categoryEditId.value) {
-        handleCategoryUpdate();
-      } else {
-        handleCategoryCreate();
+  if (categoryInput) {
+    categoryInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent form submission if inside a form
+        if (elements.categoryEditId.value) {
+          handleCategoryUpdate();
+        } else {
+          handleCategoryCreate(); // Add category but keep modal open
+        }
       }
-    }
-  });
+    });
+  }
 
-  // Category modal buttons
-  cancelCategoryBtn.addEventListener('click', handleCategoryModalCancel);
-  confirmCategoryBtn.addEventListener('click', handleCategoryModalConfirm);
+  // Category modal buttons - Add null check for cancelCategoryBtn
+  if (cancelCategoryBtn) {
+    cancelCategoryBtn.addEventListener('click', handleCategoryModalCancel);
+  }
+  
+  if (confirmCategoryBtn) {
+    confirmCategoryBtn.addEventListener('click', handleCategoryModalConfirm);
+  }
 
   // Close modal when clicking outside
-  categoryModal.addEventListener('click', (e) => {
-    if (e.target === categoryModal) {
-      handleCategoryModalCancel();
-    }
-  });
+  if (categoryModal) {
+    categoryModal.addEventListener('click', (e) => {
+      if (e.target === categoryModal) {
+        handleCategoryModalCancel();
+      }
+    });
+  }
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Close modal with Escape key
-    if (e.key === 'Escape' && categoryModal.classList.contains('active')) {
+    if (e.key === 'Escape' && categoryModal && categoryModal.classList.contains('active')) {
       handleCategoryModalCancel();
     }
     
@@ -142,7 +155,12 @@ export function setupEventListeners() {
       deleteAllCategoriesBtn.addEventListener('click', handleDeleteAllCategories);
       
       // Add the button to the sidebar footer
-      sidebarFooter.insertBefore(deleteAllCategoriesBtn, document.getElementById('logoutBtn'));
+      const logoutBtnElement = document.getElementById('logoutBtn');
+      if (logoutBtnElement) {
+        sidebarFooter.insertBefore(deleteAllCategoriesBtn, logoutBtnElement);
+      } else {
+        sidebarFooter.appendChild(deleteAllCategoriesBtn);
+      }
     }
   }
 
@@ -160,28 +178,6 @@ export function setupEventListeners() {
   window.showNoteCategoryModal = showNoteCategoryModal;
   window.updateNoteCategoryDisplay = updateNoteCategoryDisplay;
   window.changeNoteCategory = changeNoteCategory;
-}
-
-// Handle category modal cancel based on mode
-function handleCategoryModalCancel() {
-  const categoryModal = document.getElementById('categoryModal');
-  if (categoryModal.dataset.mode === 'note-category') {
-    hideNoteCategoryModal();
-  } else {
-    hideCategoryModal();
-  }
-}
-
-// Handle category modal confirm based on mode
-function handleCategoryModalConfirm() {
-  const categoryModal = document.getElementById('categoryModal');
-  if (categoryModal.dataset.mode === 'note-category') {
-    handleNoteCategoryConfirm();
-  } else if (elements.categoryEditId.value) {
-    handleCategoryUpdate();
-  } else {
-    handleCategoryCreate();
-  }
 }
 
 // Handle dark mode toggle
@@ -388,7 +384,7 @@ export async function handleBulkDelete() {
   }
 }
 
-// Handle category creation
+// Handle category creation - modified for multiple additions
 export async function handleCategoryCreate() {
   const name = elements.categoryInput.value.trim();
   let icon = elements.categoryIconInput.value.trim();
@@ -408,8 +404,31 @@ export async function handleCategoryCreate() {
   if (newCategory) {
     addCategoryToState(newCategory);
     renderCategories();
-    hideCategoryModal();
+    
+    // Clear the input field for next category
+    elements.categoryInput.value = '';
+    
+    // Reset icon selection to default
+    document.querySelectorAll('.icon-item').forEach(item => {
+      item.classList.remove('selected');
+    });
+    document.querySelector('.icon-item[data-icon="📁"]').classList.add('selected');
+    elements.categoryIconInput.value = '📁';
+    
+    // Focus on the input field for next category
+    elements.categoryInput.focus();
+    
+    // Show success toast
     showToast('Category added');
+    
+    // Add animation to form for feedback
+    const form = elements.categoryInput.closest('.modal-content');
+    if (form) {
+      form.classList.add('category-added-animation');
+      setTimeout(() => {
+        form.classList.remove('category-added-animation');
+      }, 300);
+    }
   }
 }
 
@@ -437,6 +456,26 @@ export async function handleCategoryUpdate() {
     hideCategoryModal();
     showToast('Category updated');
   }
+}
+
+
+
+// Handle category modal confirm based on mode
+function handleCategoryModalConfirm() {
+  const categoryModal = document.getElementById('categoryModal');
+  if (categoryModal.dataset.mode === 'note-category') {
+    handleNoteCategoryConfirm();
+  } else if (elements.categoryEditId.value) {
+    handleCategoryUpdate();
+  } else {
+    handleCategoryCreate();
+  }
+}
+
+// Modified cancel button handler for category modal
+export function handleCategoryModalCancel() {
+  // Just call hideCategoryModal which has null checks
+  hideCategoryModal();
 }
 
 // Handle deletion of all categories
