@@ -1,0 +1,59 @@
+/* spellcheck-toggle.css - Styles for spell check toggle functionality */
+
+/* Container for the spell check toggle */
+.spellcheck-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Spell check toggle label */
+.spellcheck-label {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+/* CSS to properly handle spell check underlines */
+[data-spellcheck="true"] .ql-editor:not(.modal .ql-editor) {
+  -webkit-spellcheck: true;
+  -moz-spellcheck: true;
+  spellcheck: true;
+}
+
+[data-spellcheck="false"] .ql-editor:not(.modal .ql-editor) {
+  -webkit-spellcheck: false;
+  -moz-spellcheck: false;
+  spellcheck: false;
+}
+
+/* Force different browsers to respect spellcheck setting changes */
+[data-spellcheck="true"] .ql-editor:not(.modal .ql-editor) {
+  text-decoration-skip-ink: auto;
+}
+
+[data-spellcheck="false"] .ql-editor:not(.modal .ql-editor) {
+  text-decoration-skip-ink: none;
+}
+
+/* Ensure spell check underlines are visible when enabled */
+[data-spellcheck="true"] .ql-editor:not(.modal .ql-editor) ::spelling-error {
+  text-decoration: wavy underline #e74c3c;
+  text-decoration-skip-ink: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .spellcheck-toggle {
+    padding: 8px 15px;
+  }
+  
+  .spellcheck-label {
+    font-size: 13px;
+  }
+}
+
+/* Note: The switch styling is inherited from dark-mode.css */
+/* This ensures consistent styling between dark mode and spell check toggles */

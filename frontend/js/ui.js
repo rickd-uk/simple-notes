@@ -245,28 +245,28 @@ export function renderCategories() {
   */
 
   // Add bulk delete button to notes header if not already present
-  const notesHeader = document.querySelector('.notes-header');
-  let bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-  
-  if (!bulkDeleteBtn) {
-    bulkDeleteBtn = document.createElement('button');
-    bulkDeleteBtn.id = 'bulkDeleteBtn';
-    bulkDeleteBtn.className = 'bulk-delete-btn';
-    bulkDeleteBtn.title = 'Delete all notes in this category';
-    bulkDeleteBtn.innerHTML = '🗑️ Delete All';
-    
-    // On mobile, ensure proper button placement
-    if (window.innerWidth <= 768) {
-      // Insert at the beginning of the header (left side)
-      notesHeader.insertBefore(bulkDeleteBtn, notesHeader.firstChild);
-    } else {
-      // On desktop, add button between the category title and add note button
-      notesHeader.insertBefore(bulkDeleteBtn, document.getElementById('addNoteBtn'));
-    }
-    
-    // Add event listener to bulk delete button
-    bulkDeleteBtn.addEventListener('click', handleBulkDelete);
-  }
+  // const notesHeader = document.querySelector('.notes-header');
+  // let bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  //
+  // if (!bulkDeleteBtn) {
+  //   bulkDeleteBtn = document.createElement('button');
+  //   bulkDeleteBtn.id = 'bulkDeleteBtn';
+  //   bulkDeleteBtn.className = 'bulk-delete-btn';
+  //   bulkDeleteBtn.title = 'Delete all notes in this category';
+  //   bulkDeleteBtn.innerHTML = '🗑️ Delete All';
+  //
+  //   // On mobile, ensure proper button placement
+  //   if (window.innerWidth <= 768) {
+  //     // Insert at the beginning of the header (left side)
+  //     notesHeader.insertBefore(bulkDeleteBtn, notesHeader.firstChild);
+  //   } else {
+  //     // On desktop, add button between the category title and add note button
+  //     notesHeader.insertBefore(bulkDeleteBtn, document.getElementById('addNoteBtn'));
+  //   }
+  //
+  //   // Add event listener to bulk delete button
+  //   bulkDeleteBtn.addEventListener('click', handleBulkDelete);
+  // }
   
   // Add event listeners to categories
   document.querySelectorAll('.category').forEach(categoryElem => {

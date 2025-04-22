@@ -1,6 +1,7 @@
 // quillEditor.js - Quill rich text editor integration
 import { handleNoteInput } from './eventHandlers.js';
 import { getToolbarsVisible } from './toolbarToggle.js';
+import { isSpellcheckEnabled, applySpellcheckToEditor } from './spellcheckToggle.js';
 
 // Store Quill editor instances
 let quillEditors = {};
@@ -39,6 +40,14 @@ export function createQuillEditor(noteElement, noteId, initialContent) {
   // Create editor element
   const editorElement = document.createElement('div');
   editorElement.className = 'quill-editor';
+  
+  // Check if this editor is in a modal
+  const isInModal = !!noteElement.closest('.modal');
+  
+  // Set spell checking based on setting (default to on in modals, follow toggle in main view)
+  const useSpellcheck = isInModal ? true : isSpellcheckEnabled();
+  editorElement.setAttribute('spellcheck', useSpellcheck ? 'true' : 'false');
+  
   editorContainer.appendChild(editorElement);
   
   // Replace textarea with editor
@@ -81,6 +90,11 @@ export function createQuillEditor(noteElement, noteId, initialContent) {
   
   // Apply current toolbar visibility state to the new editor
   applyToolbarVisibility(noteId);
+  
+  // Apply spell check setting to the Quill editor root element
+  if (!isInModal) {
+    quill.root.setAttribute('spellcheck', useSpellcheck ? 'true' : 'false');
+  }
   
   return quill;
 }
@@ -150,5 +164,17 @@ export function clearQuillEditors() {
 // Make quillEditors globally accessible via a function
 // Safer than exposing the variable directly
 export function getAllQuillEditors() {
+  window.getAllQuillEditors = function() {
+    return quillEditors;
+  };
   return quillEditors;
+}
+
+// Apply spell check state to all editors
+export function applySpellcheckToAll() {
+  // Just call the central function from spellcheckToggle.js
+  // which handles cursor position preservation
+  if (typeof applySpellcheckState === 'function') {
+    applySpellcheckState();
+  }
 }

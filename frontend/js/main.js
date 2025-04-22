@@ -5,7 +5,8 @@ import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
 import { initDarkMode } from './darkMode.js';
 import { initToolbarToggle } from './toolbarToggle.js';
-import { applyToolbarVisibilityToAll } from './quillEditor.js';
+import { applyToolbarVisibilityToAll, applySpellcheckToAll } from './quillEditor.js';
+import { initSpellcheckToggle } from './spellcheckToggle.js';
 
 // Function to update the username display
 async function updateUsernameDisplay() {
@@ -55,13 +56,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadNotes();
   
-  // Initialize the global toolbar toggle AFTER notes are loaded
+  // Initialize the spell check toggle BEFORE toolbar toggle
+  // to ensure proper loading order and visibility
   setTimeout(() => {
+    initSpellcheckToggle();
+    
+    // Then initialize toolbar toggle
     initToolbarToggle();
     
-    // Make sure toolbar visibility is applied to all editors after a brief delay
+    // Make sure toolbar visibility and spell check are applied to all editors
     setTimeout(() => {
       applyToolbarVisibilityToAll();
+      applySpellcheckToAll();
     }, 100);
   }, 500);
   
@@ -70,15 +76,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     preloadAdjacentCategories();
   }, 2000);
   
-  // Add MutationObserver to detect new notes and maintain toolbar visibility
+  // Add MutationObserver to detect new notes and maintain toggle states
   const notesContainer = document.getElementById('notesContainer');
   if (notesContainer) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          // New notes were added, ensure toolbar visibility is maintained
+          // New notes were added, ensure toggle states are maintained
           setTimeout(() => {
             applyToolbarVisibilityToAll();
+            
+            // Also apply spell check state to all editors
+            applySpellcheckToAll();
           }, 50);
         }
       });
