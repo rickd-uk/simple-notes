@@ -362,7 +362,11 @@ export function toggleNoteExpansion(noteElement) {
     // Make overlay darker
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
     overlay.style.zIndex = '9000';
-    
+   
+    // Add expanded note controls
+    import('./noteControls.js').then(module => {
+      module.addExpandedNoteControls(noteElement);
+    });
     
     // Focus on editor
     focusQuillEditor(noteId);

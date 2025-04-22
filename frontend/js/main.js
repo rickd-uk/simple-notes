@@ -5,8 +5,8 @@ import { setupEventListeners } from './eventHandlers.js';
 import { setupMobileNavigation } from './responsive.js';
 import { initDarkMode } from './darkMode.js';
 import { initToolbarToggle } from './toolbarToggle.js';
-import { applyToolbarVisibilityToAll, applySpellcheckToAll } from './quillEditor.js';
-import { initSpellcheckToggle } from './spellcheckToggle.js';
+import { applyToolbarVisibilityToAll } from './quillEditor.js';
+import { initSpellCheck, applySpellCheckToAll } from './noteControls.js';
 
 // Function to update the username display
 async function updateUsernameDisplay() {
@@ -56,38 +56,43 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadNotes();
   
-  // Initialize the spell check toggle BEFORE toolbar toggle
-  // to ensure proper loading order and visibility
+  // Initialize the global toolbar toggle
   setTimeout(() => {
-    initSpellcheckToggle();
-    
-    // Then initialize toolbar toggle
     initToolbarToggle();
     
-    // Make sure toolbar visibility and spell check are applied to all editors
+    // Make sure toolbar visibility is applied to all editors
     setTimeout(() => {
       applyToolbarVisibilityToAll();
-      applySpellcheckToAll();
     }, 100);
   }, 500);
+  
+  // Initialize spell check
+  setTimeout(() => {
+    initSpellCheck();
+    
+    // Apply spell check setting to all editors
+    setTimeout(() => {
+      const isSpellCheckEnabled = localStorage.getItem('spellCheckEnabled') === 'true';
+      applySpellCheckToAll(isSpellCheckEnabled);
+    }, 200);
+  }, 700);
   
   // Preload adjacent categories after initial load
   setTimeout(() => {
     preloadAdjacentCategories();
   }, 2000);
   
-  // Add MutationObserver to detect new notes and maintain toggle states
+  // Add MutationObserver to detect new notes and maintain toolbar visibility and spell check
   const notesContainer = document.getElementById('notesContainer');
   if (notesContainer) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          // New notes were added, ensure toggle states are maintained
+          // New notes were added, ensure toolbar visibility and spell check are maintained
           setTimeout(() => {
             applyToolbarVisibilityToAll();
-            
-            // Also apply spell check state to all editors
-            applySpellcheckToAll();
+            const isSpellCheckEnabled = localStorage.getItem('spellCheckEnabled') === 'true';
+            applySpellCheckToAll(isSpellCheckEnabled);
           }, 50);
         }
       });

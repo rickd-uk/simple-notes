@@ -1,7 +1,7 @@
 // toolbarToggle.js - Global toolbar toggle functionality
 
 // Flag to track global toolbar visibility state - make this accessible to the rest of the application
-export let toolbarsVisible = true;
+export let toolbarsVisible = false;
 
 /**
  * Toggle visibility of all Quill toolbars
@@ -37,8 +37,8 @@ export function toggleToolbars(visible) {
     }
   });
   
-  // Update toggle switch appearance
-  updateToggleSwitchAppearance();
+  // Update toggle button appearance based on state
+  updateToggleButtonAppearance();
   
   // Set attribute on body for easy CSS targeting
   document.body.setAttribute('data-toolbars-hidden', !toolbarsVisible);
@@ -54,13 +54,15 @@ export function initToolbarToggle() {
   const savedVisibility = localStorage.getItem('toolbarsVisible');
   if (savedVisibility !== null) {
     toolbarsVisible = savedVisibility === 'true';
+    toggleToolbars(toolbarsVisible);
+  } else {
+    toolbarsVisible = false;
+  localStorage.setItem('toolbarsVisible', 'false');
+  toggleToolbars(false);
   }
   
-  // Create the toggle switch if it doesn't exist
-  createToolbarToggleSwitch();
-  
-  // Apply the current visibility state
-  toggleToolbars(toolbarsVisible);
+  // Create the global toggle buttons in the main header
+  createMainViewToggles();
 }
 
 /**
@@ -72,71 +74,118 @@ export function getToolbarsVisible() {
 }
 
 /**
- * Create the toggle switch in the UI
+ * Set toolbar visibility to a specific state
+ * @param {boolean} visible - Whether toolbars should be visible
  */
-function createToolbarToggleSwitch() {
-  // Check if the switch already exists
-  if (document.querySelector('.toolbar-toggle')) return;
-  
-  // Create the container
-  const toggleContainer = document.createElement('div');
-  toggleContainer.className = 'toolbar-toggle';
-  
-  // Create the label
-  const toggleLabel = document.createElement('span');
-  toggleLabel.className = 'toolbar-label';
-  toggleLabel.textContent = 'Formatting Toolbar';
-  
-  // Create the switch container
-  const switchContainer = document.createElement('label');
-  switchContainer.className = 'switch';
-  
-  // Create the checkbox input
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.id = 'toolbarToggle';
-  checkbox.checked = toolbarsVisible;
-  
-  // Create the slider element
-  const slider = document.createElement('span');
-  slider.className = 'slider';
-  
-  // Assemble the switch
-  switchContainer.appendChild(checkbox);
-  switchContainer.appendChild(slider);
-  
-  // Assemble the toggle container
-  toggleContainer.appendChild(toggleLabel);
-  toggleContainer.appendChild(switchContainer);
-  
-  // Add click event to checkbox
-  checkbox.addEventListener('change', () => {
-    toggleToolbars(checkbox.checked);
-  });
-  
-  // Find where to place the toggle
-  const spellcheckToggle = document.querySelector('.spellcheck-toggle');
-  if (spellcheckToggle) {
-    // Insert after the spellcheck toggle
-    spellcheckToggle.parentNode.insertBefore(toggleContainer, spellcheckToggle.nextSibling);
-  } else {
-    // Fallback - add near dark mode toggle
-    const darkModeToggle = document.querySelector('.dark-mode-toggle');
-    if (darkModeToggle) {
-      darkModeToggle.parentNode.insertBefore(toggleContainer, darkModeToggle);
-    }
+export function setToolbarsVisible(visible) {
+  if (visible !== toolbarsVisible) {
+    toggleToolbars(visible);
   }
-  
-  // Expose toggle function globally for easier debugging
-  window.toggleToolbars = toggleToolbars;
 }
 
 /**
- * Update toggle switch appearance based on current state
+ * Update the appearance of toolbar toggle button based on current state
  */
-function updateToggleSwitchAppearance() {
-  const toggleCheckbox = document.getElementById('toolbarToggle');
-  if (toggleCheckbox) {
-    toggleCheckbox.checked = toolbarsVisible;
+function updateToggleButtonAppearance() {
+  // Update main toolbar toggle button
+  const toolbarToggle = document.getElementById('mainToolbarToggle');
+  if (toolbarToggle) {
+    toolbarToggle.classList.toggle('active', toolbarsVisible);
   }
+  
+  // Update expanded note toolbar toggle button
+  const expandedControls = document.getElementById('expandedNoteControls');
+  if (expandedControls) {
+    const expandedToggle = expandedControls.querySelector('button:first-child');
+    if (expandedToggle) {
+      expandedToggle.classList.toggle('active', toolbarsVisible);
+    }
+  }
+}
+
+/**
+ * Create toggle buttons in the main view header
+ */
+/**
+ * Create toggle buttons in the main view header
+ */
+function createMainViewToggles() {
+  // Get the notes header where we'll add the toggles
+  const notesHeader = document.querySelector('.notes-header');
+  const addNoteBtn = document.getElementById('addNoteBtn');
+  
+  if (!notesHeader || !addNoteBtn) return;
+  
+  // Create a container for the control buttons to group them
+  const controlsContainer = document.createElement('div');
+  controlsContainer.className = 'header-controls-group';
+  controlsContainer.id = 'headerControlsGroup';
+  
+  // Create toolbar toggle button
+  const toolbarToggle = document.createElement('button');
+  toolbarToggle.id = 'mainToolbarToggle';
+  toolbarToggle.className = `header-control-btn ${toolbarsVisible ? 'active' : ''}`;
+  toolbarToggle.title = 'Toggle Formatting Toolbar';
+  toolbarToggle.innerHTML = '<span style="font-weight: bold;">T</span>';
+  
+  // Add click handler
+  toolbarToggle.addEventListener('click', () => {
+    toggleToolbars();
+  });
+  
+  // Add toolbar toggle to container
+  controlsContainer.appendChild(toolbarToggle);
+  
+  // Import spell check functions and add the spell check toggle
+  import('./noteControls.js').then(module => {
+    const spellCheckToggle = document.createElement('button');
+    spellCheckToggle.id = 'mainSpellCheckToggle';
+    spellCheckToggle.className = `header-control-btn ${module.isSpellCheckEnabled() ? 'active' : ''}`;
+    spellCheckToggle.title = 'Toggle Spell Check';
+    spellCheckToggle.innerHTML = '<span style="font-weight: bold;">Aa</span>';
+    
+    // Add click handler
+    spellCheckToggle.addEventListener('click', () => {
+      const newState = module.toggleSpellCheck();
+      spellCheckToggle.classList.toggle('active', newState);
+    });
+    
+    // Add spell check toggle to container
+    controlsContainer.appendChild(spellCheckToggle);
+    
+    // Optional: Add search button
+    const searchButton = document.createElement('button');
+    searchButton.id = 'searchButton';
+    searchButton.className = 'header-control-btn';
+    searchButton.title = 'Search Notes';
+    searchButton.innerHTML = '<span>🔍</span>';
+    
+    // Add click handler for search button
+    searchButton.addEventListener('click', () => {
+      // Placeholder for search functionality
+      alert('Search functionality to be implemented');
+    });
+    
+    // Add search button to container
+    controlsContainer.appendChild(searchButton);
+    
+    // Optional: Add sort button
+    const sortButton = document.createElement('button');
+    sortButton.id = 'sortButton';
+    sortButton.className = 'header-control-btn';
+    sortButton.title = 'Sort Notes';
+    sortButton.innerHTML = '<span>↕️</span>';
+    
+    // Add click handler for sort button
+    sortButton.addEventListener('click', () => {
+      // Placeholder for sort functionality
+      alert('Sort functionality to be implemented');
+    });
+    
+    // Add sort button to container
+    controlsContainer.appendChild(sortButton);
+    
+    // Insert the container before the add note button
+    notesHeader.insertBefore(controlsContainer, addNoteBtn);
+  });
 }
