@@ -96,10 +96,26 @@
     color: var(--text-color);
 }
 
+/* Better handling of the icon grid when many icons are hidden */
 .icon-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  min-height: 90px; /* Ensures grid has minimum height even when empty */
+}
+
+/* Message for when no icons are available */
+.no-icons-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Dark mode support */
+body.dark-mode .no-icons-message {
+  color: #aaaaaa;
 }
 
 .icon-item {
@@ -122,3 +138,17 @@
 .icon-item.selected {
     background-color: var(--primary-color);
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .icon-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+

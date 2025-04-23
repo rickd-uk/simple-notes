@@ -1,5 +1,5 @@
 // uiUtils.js - UI utility functions
-import { elements } from './state.js';
+import { elements, getCategories } from './state.js';
 import { handleNoteDelete } from './eventHandlers.js';
 
 // Show toast notification
@@ -46,6 +46,40 @@ export function recreateAllNoteButtons() {
   });
 }
 
+// Function to check if we need to show the "no icons available" message
+export function updateIconGridVisibility() {
+  const iconGrid = document.getElementById('iconGrid');
+  if (!iconGrid) return;
+  
+  // Count visible icons
+  const visibleIcons = iconGrid.querySelectorAll('.icon-item:not([style*="display: none"])');
+  
+  // Remove any existing no-icons message
+  const existingMessage = iconGrid.querySelector('.no-icons-message');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+  
+  // If no icons are visible, add a message
+  if (visibleIcons.length === 0) {
+    const message = document.createElement('div');
+    message.className = 'no-icons-message';
+    message.textContent = 'All icons are in use. Delete a category to free up icons.';
+    iconGrid.appendChild(message);
+  }
+}
+
+// Helper function to get icons that are already in use
+function getUsedIcons(excludeCategoryId = null) {
+  const categories = getCategories();
+  
+  // Filter out icons from all categories except the one being edited
+  return categories
+    .filter(cat => cat.id && cat.id.toString() !== excludeCategoryId)
+    .map(cat => cat.icon)
+    .filter(icon => icon); // Remove any null/undefined icons
+}
+
 // Show category modal with modified buttons for multi-add
 export function showCategoryModal(isEdit = false, categoryId = null, categoryName = '', categoryIcon = '📁') {
   const {
@@ -69,6 +103,9 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
   // Change text based on mode
   categoryModalHeader.textContent = isEdit ? 'Edit Category' : 'Add Categories';
   confirmCategoryBtn.textContent = isEdit ? 'Update' : 'Add';
+
+  // Set the mode for CSS targeting and state management
+  categoryModal.dataset.mode = isEdit ? 'edit' : 'add';
   
   // Modify Cancel button's text and behavior in Add Categories mode if it exists
   const cancelCategoryBtn = elements.cancelCategoryBtn || document.getElementById('cancelCategoryBtn');
@@ -80,29 +117,58 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
     }
   }
   
-  // Reset icon selection
-  document.querySelectorAll('.icon-item').forEach(item => {
+  // Filter out icons that are already in use
+  const usedIcons = getUsedIcons(categoryId); // Skip the current category when editing
+  
+  // Reset icon selection - only show available icons
+  const allIconItems = document.querySelectorAll('.icon-item');
+  allIconItems.forEach(item => {
+    const iconValue = item.dataset.icon;
     item.classList.remove('selected');
+    
+    // If this icon is already used by another category, hide it
+    if (usedIcons.includes(iconValue) && !(isEdit && iconValue === categoryIcon)) {
+      item.style.display = 'none';
+    } else {
+      // Otherwise, show it
+      item.style.display = '';
+    }
   });
+
+  // Make sure category list content is empty
+  const categorySelectionDiv = document.getElementById('categorySelectionList');
+  if (categorySelectionDiv) {
+    categorySelectionDiv.innerHTML = '';
+  }
+  
+  // Check if we need to show the "no icons available" message
+  updateIconGridVisibility();
   
   if (isEdit) {
     categoryEditId.value = categoryId;
     categoryInput.value = categoryName;
     
-    // Set selected icon
+    // Set selected icon - this will always be visible because we excluded it in usedIcons
     const iconElement = document.querySelector(`.icon-item[data-icon="${categoryIcon}"]`);
     if (iconElement) {
       iconElement.classList.add('selected');
       categoryIconInput.value = categoryIcon;
     } else {
-      // If icon doesn't exist in our grid, select the default
-      document.querySelector('.icon-item[data-icon="📁"]').classList.add('selected');
-      categoryIconInput.value = '📁';
+      // Find the first available icon if the current one doesn't exist
+      const firstVisibleIcon = document.querySelector('.icon-item:not([style*="display: none"])');
+      if (firstVisibleIcon) {
+        firstVisibleIcon.classList.add('selected');
+        categoryIconInput.value = firstVisibleIcon.dataset.icon;
+      }
     }
   } else {
-    // Default icon for new categories
-    document.querySelector('.icon-item[data-icon="📁"]').classList.add('selected');
-    categoryIconInput.value = '📁';
+    // For new categories, select the first available icon
+    const firstVisibleIcon = document.querySelector('.icon-item:not([style*="display: none"])');
+    if (firstVisibleIcon) {
+      firstVisibleIcon.classList.add('selected');
+      categoryIconInput.value = firstVisibleIcon.dataset.icon;
+    }
+    
     categoryInput.value = '';
     categoryEditId.value = '';
   }
@@ -123,6 +189,13 @@ export function showCategoryModal(isEdit = false, categoryId = null, categoryNam
   
   categoryModal.classList.add('active');
   categoryInput.focus();
+
+  // Set up click outside handler
+  categoryModal.onclick = function(e) {
+    if (e.target === categoryModal) {
+      hideCategoryModal();
+    }
+  };
 }
 
 // Hide category modal and restore buttons
@@ -157,9 +230,23 @@ export function hideCategoryModal() {
   if (modalContent) {
     modalContent.style = '';
   }
+
+  // Remove any category selection list content
+  const categorySelectionDiv = document.getElementById('categorySelectionList');
+  if (categorySelectionDiv) {
+    categorySelectionDiv.innerHTML = '';
+  }
+  
+  // Make sure these are visible for next use
+  if (categoryInput) categoryInput.style.display = '';
+  const iconSelector = document.querySelector('.icon-selector');
+  if (iconSelector) iconSelector.style.display = '';
   
   // RESTORE ALL DELETE BUTTONS
   setTimeout(recreateAllNoteButtons, 50);
+
+  // Remove click handler to prevent memory leaks
+  categoryModal.onclick = null;
 }
 
 // Confirm dialog with custom modal (returns Promise)
@@ -260,4 +347,42 @@ export function updateButtonPlacement() {
       notesHeader.insertBefore(bulkDeleteBtn, addNoteBtn);
     }
   }
+}
+
+// Function to hide a specific icon in the modal
+export function hideIconInModal(icon) {
+  if (!icon) return;
+  
+  const iconElement = document.querySelector(`.icon-item[data-icon="${icon}"]`);
+  if (iconElement) {
+    iconElement.style.display = 'none';
+    
+    // If this was the selected icon, select another visible one
+    if (iconElement.classList.contains('selected')) {
+      selectFirstAvailableIcon();
+    }
+    
+    // Update visibility to show message if needed
+    updateIconGridVisibility();
+  }
+}
+
+// Function to select the first available icon
+export function selectFirstAvailableIcon() {
+  // Clear all selections
+  document.querySelectorAll('.icon-item').forEach(item => {
+    item.classList.remove('selected');
+  });
+  
+  // Find and select first visible icon
+  const firstVisibleIcon = document.querySelector('.icon-item:not([style*="display: none"])');
+  if (firstVisibleIcon) {
+    firstVisibleIcon.classList.add('selected');
+    if (elements.categoryIconInput) {
+      elements.categoryIconInput.value = firstVisibleIcon.dataset.icon;
+    }
+    return firstVisibleIcon.dataset.icon;
+  }
+  
+  return null; // No visible icons found
 }

@@ -24,16 +24,17 @@ export function showNoteCategoryModal(noteId) {
   const categoryModal = document.getElementById('categoryModal');
   const categoryModalHeader = document.getElementById('categoryModalHeader');
   const confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
-  const cancelCategoryBtn = document.getElementById('cancelCategoryBtn'); // Make sure you have this ID on your cancel button
+  const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
 
   // Set modal title and mode
   categoryModalHeader.textContent = 'Choose Category';
-  categoryModal.dataset.mode = 'note-category'; // Use this attribute to potentially style/hide elements via CSS too
+  categoryModal.dataset.mode = 'note-category'; // Use this attribute to style/hide elements
 
   // --- Hide elements not needed for category selection ---
   document.getElementById('categoryEditId').value = ''; // Clear edit ID if reusing modal
   const categoryInput = document.getElementById('categoryInput');
   if(categoryInput) categoryInput.style.display = 'none'; // Hide category name input
+  
   const iconSelector = document.querySelector('.icon-selector');
   if (iconSelector) iconSelector.style.display = 'none'; // Hide icon selector
 
@@ -56,7 +57,7 @@ export function showNoteCategoryModal(noteId) {
     }
   }
 
-  // --- Generate the category selection list (Revised Logic) ---
+  // --- Generate the category selection list ---
   const categories = getCategories();
   let categoryListHTML = '';
 
@@ -83,29 +84,34 @@ export function showNoteCategoryModal(noteId) {
 
   categorySelectionDiv.innerHTML = categoryListHTML;
 
-  // --- Add event listeners to category options (Revised Logic) ---
+  // --- Add event listeners to category options ---
   document.querySelectorAll('.category-option').forEach(option => {
-    option.addEventListener('click', async () => { // Make listener async
-      if (!currentEditNoteId) return; // Safety check
+    option.addEventListener('click', async () => {
+      if (!currentEditNoteId) return;
 
       const selectedCategoryId = option.dataset.categoryId;
-      const noteIdToUpdate = currentEditNoteId; // Store ID before modal closes
+      const noteIdToUpdate = currentEditNoteId;
 
-      // --- Perform action immediately ---
-      hideNoteCategoryModal(); // Close the modal
+      hideNoteCategoryModal();
 
       try {
-        console.log(`Attempting to change note ${noteIdToUpdate} to category ${selectedCategoryId}`);
-        await changeNoteCategory(noteIdToUpdate, selectedCategoryId); // Change the category
+        await changeNoteCategory(noteIdToUpdate, selectedCategoryId);
       } catch (error) {
         console.error("Failed to change category on click:", error);
-        showToast('Error changing category'); // Show feedback
+        showToast('Error changing category');
       }
     });
   });
 
   // Show the modal
   categoryModal.classList.add('active');
+  
+  // Add click outside to close event handler
+  categoryModal.onclick = function(e) {
+    if (e.target === categoryModal) {
+      hideNoteCategoryModal();
+    }
+  };
 }
 
 // Handle confirm button click in category selection mode
@@ -131,36 +137,36 @@ export async function handleNoteCategoryConfirm() {
 }
 
 
-// Hide the category modal after selection
+// Hide the category modal after selection - WITH PROPER RESET
 export function hideNoteCategoryModal() {
   const categoryModal = document.getElementById('categoryModal');
   const iconSelector = document.querySelector('.icon-selector');
-  const confirmCategoryBtn = document.getElementById('confirmCategoryBtn'); // Get button
-  const categoryInput = document.getElementById('categoryInput'); // Get input
+  const confirmCategoryBtn = document.getElementById('confirmCategoryBtn');
+  const categoryInput = document.getElementById('categoryInput');
 
-  if (!categoryModal) return; // Prevent errors if modal not found
+  if (!categoryModal) return;
 
   categoryModal.classList.remove('active');
-  categoryModal.dataset.mode = ''; // Clear the mode
+  
+  // CRUCIAL FIX: Clear the mode
+  categoryModal.removeAttribute('data-mode');
 
-  // Restore potentially hidden elements for other modal uses (Add/Edit Category)
-  if(categoryInput) categoryInput.style.display = '';
+  // Restore potentially hidden elements for other modal uses
+  if (categoryInput) categoryInput.style.display = '';
   if (iconSelector) iconSelector.style.display = '';
-
-  // --- Restore the confirm button ---
-  if(confirmCategoryBtn) {
-      confirmCategoryBtn.style.display = ''; // Make it visible again
-      confirmCategoryBtn.disabled = false; // Ensure it's enabled
-  }
+  if (confirmCategoryBtn) confirmCategoryBtn.style.display = '';
 
   // Remove the category selection list content
   const categorySelectionDiv = document.getElementById('categorySelectionList');
   if (categorySelectionDiv) {
-    categorySelectionDiv.innerHTML = ''; // Clear the list
+    categorySelectionDiv.innerHTML = '';
   }
 
-  // Clear the current edit note ID - IMPORTANT
+  // Clear the current edit note ID
   currentEditNoteId = null;
+  
+  // Remove click handler to prevent memory leaks
+  categoryModal.onclick = null;
 }
 
 

@@ -33,7 +33,8 @@ import {
   hideCategoryModal, 
   confirmDialog,
   getCategoryName,
-  updateButtonPlacement
+  updateButtonPlacement,
+  hideIconInModal,
 } from './uiUtils.js';
 import { getCategories } from './state.js';
 import {
@@ -402,33 +403,21 @@ export async function handleCategoryCreate() {
   const newCategory = await createCategory(name, icon);
   
   if (newCategory) {
+    // Add to state and update UI
     addCategoryToState(newCategory);
     renderCategories();
-    
+  
+    // Hide the used icon immediately in the modal
+    hideIconInModal(icon);
+
     // Clear the input field for next category
     elements.categoryInput.value = '';
-    
-    // Reset icon selection to default
-    document.querySelectorAll('.icon-item').forEach(item => {
-      item.classList.remove('selected');
-    });
-    document.querySelector('.icon-item[data-icon="📁"]').classList.add('selected');
-    elements.categoryIconInput.value = '📁';
     
     // Focus on the input field for next category
     elements.categoryInput.focus();
     
     // Show success toast
     showToast('Category added');
-    
-    // Add animation to form for feedback
-    const form = elements.categoryInput.closest('.modal-content');
-    if (form) {
-      form.classList.add('category-added-animation');
-      setTimeout(() => {
-        form.classList.remove('category-added-animation');
-      }, 300);
-    }
   }
 }
 
@@ -447,6 +436,11 @@ export async function handleCategoryUpdate() {
   if (!icon) {
     icon = '📁';
   }
+
+  // Get the original category to check if icon is changing
+  const categories = getCategories();
+  const originalCategory = categories.find(cat => cat.id.toString() === id);
+  const originalIcon = originalCategory ? originalCategory.icon : null;
   
   const updatedCategory = await updateCategory(id, name, icon);
   
