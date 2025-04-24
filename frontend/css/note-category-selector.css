@@ -1,6 +1,6 @@
-/* Fixed note-category-selector.css */
+/* note-category-selector.css - Styling for note categories and category selection */
 
-/* Note category label styling */
+/* ===== Note Category Label Styling ===== */
 .note-category {
   display: flex;
   align-items: center;
@@ -13,8 +13,8 @@
   cursor: pointer;
   transition: background-color 0.2s;
   max-width: fit-content;
-  position: relative; /* Keep this if needed for internal elements, otherwise remove */
-  margin-right: 25%; /* Note: This might cause layout issues, review if needed */
+  position: relative;
+  margin-right: 25%;
 }
 
 .note-category:hover {
@@ -33,8 +33,9 @@
   white-space: nowrap;
 }
 
+/* ===== Note Footer Positioning ===== */
 /* Position within note footer - CENTERED CONTAINER (Non-Expanded Note) */
-.note:not(.expanded) .note-footer { /* Specific to non-expanded notes */
+.note:not(.expanded) .note-footer {
   position: absolute !important;
   top: auto !important;
   bottom: 10px !important;
@@ -55,12 +56,13 @@
   font-size: 12px !important;
   color: #757575 !important;
   flex-shrink: 0 !important;
-  display: inline-block !important; /* Consider removing if causing issues */
-  text-align: right !important; /* Often redundant in flex, but harmless */
+  display: inline-block !important;
+  text-align: right !important;
 }
 
+/* ===== Button Positioning ===== */
 /* Expand button position - BOTTOM RIGHT (Non-Expanded Note) */
-.note:not(.expanded) .note-expand { /* Specific to non-expanded notes */
+.note:not(.expanded) .note-expand {
   position: absolute !important;
   top: auto !important;
   left: auto !important;
@@ -70,7 +72,7 @@
 }
 
 /* Delete button position - BOTTOM LEFT (Non-Expanded Note) */
-.note:not(.expanded) .note-delete { /* Specific to non-expanded notes */
+.note:not(.expanded) .note-delete {
   position: absolute !important;
   top: auto !important;
   right: auto !important;
@@ -79,97 +81,85 @@
   z-index: 10 !important;
 }
 
-/* --- Core Fix for Modal Centering --- */
+/* ===== Core Fix for Modal Centering ===== */
 /* Set relative positioning ONLY for NON-EXPANDED notes */
-/* This allows absolutely positioned children like footer/buttons to work */
 .note:not(.expanded) {
   position: relative;
-  /* Add any other styles specific to non-expanded notes here */
 }
 
 /* Styles applying to ALL notes (normal and expanded) */
 .note {
-  /* padding-bottom is needed to prevent content overlap BEFORE expansion */
-  /* Consider if !important is truly necessary */
   padding-bottom: 40px !important;
   width: 100%;
-  /* Add other styles that apply to BOTH states */
-  box-sizing: border-box; /* Good practice */
-  /* Example: Maybe background, border-radius etc. apply to both */
-  background-color: var(--surface-color); /* Assuming notes always have a background */
-  border-radius: var(--border-radius); /* Assuming consistent radius */
+  box-sizing: border-box;
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
 }
-/* --- End of Core Fix --- */
 
-
-/* Positioning in expanded notes */
-/* Footer position INSIDE the expanded note (relative to expanded note) */
-/* Note: JS moves expanded note to body and uses fixed positioning */
-/* This rule might need adjustment depending on final expanded note structure */
+/* ===== Expanded Note Positioning ===== */
+/* Footer position INSIDE the expanded note */
 .note.expanded .note-footer {
-  position: absolute !important; /* Position relative to the .note.expanded container */
+  position: absolute !important;
   bottom: 15px !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 10 !important; /* Ensure footer is above editor content */
-  padding: 0 50px !important; /* Spacing for buttons */
-  /* Ensure flex centering still applies */
+  z-index: 10 !important;
+  padding: 0 50px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 10px !important;
 }
 
-/* Delete button in expanded note - Viewport Fixed */
-/* This rule IS CORRECT, but being overridden */
+/* Delete button in expanded note */
 .note.expanded .note-delete {
-  position: fixed !important;     /* Position relative to viewport */
-  bottom: 15px !important;    /* 15px from viewport bottom */
-  left: 15px !important;     /* 15px from viewport left */
+  position: fixed !important;
+  bottom: 15px !important;
+  left: 15px !important;
   top: auto !important;
   right: auto !important;
-  z-index: 9002 !important;    /* Above modal content, below potential top controls? */
+  z-index: 9002 !important;
   opacity: 1 !important;
-  background-color: rgba(255, 255, 255, 0.9) !important; /* Make it visible */
-  border-radius: 50%;         /* Example: make it round */
-  padding: 5px;             /* Example: padding */
-  /* Add width/height if needed */
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50%;
+  padding: 5px;
 }
 
-/* Expanded note expand/collapse button positioning - Viewport Fixed */
+/* Expanded note expand/collapse button positioning */
 .note.expanded .note-expand {
-  position: fixed !important;     /* Position relative to viewport */
-  bottom: 15px !important;    /* 15px from viewport bottom */
-  right: 15px !important;    /* 15px from viewport right */
-  z-index: 9002 !important;    /* Same level as delete */
-  /* Add background/padding/etc. if needed */
+  position: fixed !important;
+  bottom: 15px !important;
+  right: 15px !important;
+  z-index: 9002 !important;
 }
 
-
-/* --- Category Selection Modal --- */
+/* ===== Category Selection Modal ===== */
 .category-selection-list {
   margin-bottom: 15px;
   margin-top: 10px;
 }
 
+/* Two-column layout for category selection */
 .category-selection-options {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
   gap: 8px;
   max-height: 300px;
   overflow-y: auto;
-  padding: 5px 0;
+  padding: 5px;
   border: 1px solid #e0e0e0;
   border-radius: var(--border-radius);
 }
 
+/* Category option styling */
 .category-option {
   display: flex;
   align-items: center;
-  padding: 12px 15px;
+  padding: 10px;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
+  min-width: 0; /* Force each option to stay in its own cell */
 }
 
 .category-option:hover {
@@ -180,14 +170,19 @@
   background-color: rgba(98, 0, 238, 0.1);
 }
 
+/* Category option elements */
 .category-option-icon {
-  margin-right: 12px;
-  font-size: 18px;
+  margin-right: 8px;
+  font-size: 16px;
+  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
 .category-option-name {
   flex-grow: 1;
-  font-size: 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* No categories message */
@@ -198,7 +193,7 @@
   font-style: italic;
 }
 
-/* Hide the input field when selecting a category for a note */
+/* Modal mode-specific styling */
 #categoryModal[data-mode="note-category"] .modal-header {
   color: var(--primary-color);
 }
@@ -207,24 +202,11 @@
   display: none !important;
 }
 
-/* Adjust icon selector for category selection mode */
 #categoryModal[data-mode="note-category"] .icon-selector {
   display: none !important;
 }
 
-
-
-body.dark-mode .note:not(.expanded) .note-delete {
-    /* Styles here */
-  background-color: transparent !important; /* Correct syntax, use ONLY if needed */
-  color: #DADCE0 !important;               /* Correct syntax, use ONLY if needed */
-  border: none !important;                  /* Correct syntax, use ONLY if needed */
-}
-
-
-
-
-/* --- Dark mode support --- */
+/* ===== Dark Mode Support ===== */
 body.dark-mode .note-category {
   background-color: rgba(187, 134, 252, 0.1);
 }
@@ -234,7 +216,7 @@ body.dark-mode .note-category:hover {
 }
 
 body.dark-mode .category-selection-options {
-  border-color: var(--border-color); /* Make sure --border-color is defined for dark mode */
+  border-color: var(--border-color);
 }
 
 body.dark-mode .category-option:hover {
@@ -249,7 +231,14 @@ body.dark-mode .no-categories-message {
   color: #aaaaaa;
 }
 
-/* --- Mobile optimization --- */
+body.dark-mode .note:not(.expanded) .note-delete {
+  background-color: transparent !important;
+  color: #DADCE0 !important;
+  border: none !important;
+}
+
+/* ===== Responsive Design ===== */
+/* Tablet and small desktops */
 @media (max-width: 768px) {
   .note-category-name {
     max-width: 100px;
@@ -275,6 +264,7 @@ body.dark-mode .no-categories-message {
   }
 }
 
+/* Small mobile devices */
 @media (max-width: 480px) {
   .note-category {
     padding: 3px 6px;
@@ -289,17 +279,17 @@ body.dark-mode .no-categories-message {
     max-width: 80px;
   }
 
-  /* Adjust delete button size on small screens (applies to both states potentially) */
+  /* Adjust delete button size on small screens */
   .note-delete {
     width: 24px !important;
     height: 24px !important;
     font-size: 14px !important;
-    /* Adjust fixed position slightly if needed */
-    /* bottom: 10px !important; */
-    /* left: 10px !important; */
   }
-   /* Adjust expand button size on small screens */
-  .note-expand {
-     /* Add similar size adjustments if needed */
+}
+
+/* Very small mobile devices */
+@media (max-width: 400px) {
+  .category-selection-options {
+    grid-template-columns: 1fr; /* Single column */
   }
 }

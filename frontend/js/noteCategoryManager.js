@@ -57,13 +57,12 @@ export function showNoteCategoryModal(noteId) {
     }
   }
 
-  // --- Generate the category selection list ---
-  const categories = getCategories();
-  let categoryListHTML = '';
+  // --- UPDATED: Create a container div for the two-column grid layout ---
+  let categoryOptionsHTML = '<div class="category-selection-options">';
 
   // Always add "Uncategorized" option and mark if current
   const isCurrentlyUncategorized = !currentNoteCategoryId || currentNoteCategoryId === 'null';
-  categoryListHTML += `
+  categoryOptionsHTML += `
     <div class="category-option${isCurrentlyUncategorized ? ' selected' : ''}" data-category-id="null">
       <div class="category-option-icon">📌</div>
       <div class="category-option-name">Uncategorized</div>
@@ -71,10 +70,11 @@ export function showNoteCategoryModal(noteId) {
   `;
 
   // Add all available custom categories and mark if current
+  const categories = getCategories();
   categories.forEach(category => {
     const categoryId = category.id.toString();
     const isCurrent = categoryId === currentNoteCategoryId;
-    categoryListHTML += `
+    categoryOptionsHTML += `
       <div class="category-option${isCurrent ? ' selected' : ''}" data-category-id="${categoryId}">
         <div class="category-option-icon">${category.icon || '📁'}</div>
         <div class="category-option-name">${category.name}</div>
@@ -82,7 +82,11 @@ export function showNoteCategoryModal(noteId) {
     `;
   });
 
-  categorySelectionDiv.innerHTML = categoryListHTML;
+  // Close the container div
+  categoryOptionsHTML += '</div>';
+  
+  // Set the HTML with our two-column container
+  categorySelectionDiv.innerHTML = categoryOptionsHTML;
 
   // --- Add event listeners to category options ---
   document.querySelectorAll('.category-option').forEach(option => {
