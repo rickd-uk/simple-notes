@@ -24,18 +24,8 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
-module.exports = {
-  query: async (text, params) => {
-    try {
-      return await pool.query(text, params);
-    } catch (err) {
-      console.error('Database query error:', err);
-      throw err; // Rethrow so the API can respond with an error
-    }
-  }
-};
-
-module.exports = {
+// Define a single export object with all methods
+const db = {
   query: async (text, params) => {
     try {
       return await pool.query(text, params);
@@ -100,3 +90,5 @@ module.exports = {
     }
   }
 };
+
+module.exports = db;
