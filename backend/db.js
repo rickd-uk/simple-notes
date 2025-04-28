@@ -25,7 +25,8 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 
 // Define a single export object with all methods
-const db = {
+module.exports = {
+  // Basic query function
   query: async (text, params) => {
     try {
       return await pool.query(text, params);
@@ -33,6 +34,11 @@ const db = {
       console.error('Database query error:', err);
       throw err; // Rethrow so the API can respond with an error
     }
+  },
+  
+  // Get a client for transactions
+  getClient: async () => {
+    return await pool.connect();
   },
   
   // Helper function to get user by username
@@ -90,5 +96,3 @@ const db = {
     }
   }
 };
-
-module.exports = db;
