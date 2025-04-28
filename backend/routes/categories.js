@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error('Error getting categories:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('Error creating category:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -87,105 +87,163 @@ router.put('/:id', async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('Error updating category:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 // Delete all categories for the current user and update related notes
 router.delete('/all', async (req, res) => {
+  // Use a client from the pool for transaction
+  const client = await db.getClient();
+  
   try {
     const userId = req.user.userId;
     
-    console.log(`Delete all categories request for user: ${userId}`);
-
-    let query, params, updateQuery, updateParams;
+    console.log(`Delete all categories request for user ID: ${userId}, Type: ${typeof userId}`);
     
-    // Handle admin user from .env file (backward compatibility)
+    // Start transaction
+    await client.query('BEGIN');
+    
+    // Handle admin user case
     if (userId === 'admin') {
-      console.log('Admin user: Setting all notes to uncategorized');
+      console.log('Admin user: updating all notes');
       
-      // Set category_id to NULL for all notes (admin can see/edit all)
-      updateQuery = 'UPDATE notes SET category_id = NULL';
-      updateParams = [];
+      // Update all notes to have NULL category
+      await client.query('UPDATE notes SET category_id = NULL');
       
-      // Delete all categories (admin can delete all)
-      query = 'DELETE FROM categories RETURNING id';
-      params = [];
-    } else {
-      console.log(`Regular user ${userId}: Setting their notes to uncategorized`);
+      // Delete all categories
+      const deleteResult = await client.query('DELETE FROM categories RETURNING id');
+      const count = deleteResult.rowCount;
       
-      // For regular users, only affect their own notes and categories
-      updateQuery = 'UPDATE notes SET category_id = NULL WHERE user_id = $1';
-      updateParams = [userId];
+      // Commit the transaction
+      await client.query('COMMIT');
       
-      query = 'DELETE FROM categories WHERE user_id = $1 RETURNING id';
-      params = [userId];
+      console.log(`Admin deleted ${count} categories`);
+      return res.json({
+        message: 'All categories deleted successfully',
+        count: count
+      });
+    } 
+    else {
+      // Handle regular user case
+      console.log(`Updating notes for user ID: ${userId}`);
+      
+      // Cast the userId to integer as it might be coming as string
+      const numericUserId = parseInt(userId, 10);
+      
+      if (isNaN(numericUserId)) {
+        console.error('User ID is not a valid number:', userId);
+        throw new Error('Invalid user ID format');
+      }
+      
+      // Update user's notes to have NULL category
+      const updateResult = await client.query(
+        'UPDATE notes SET category_id = NULL WHERE user_id = $1',
+        [numericUserId]
+      );
+      
+      console.log(`Updated ${updateResult.rowCount} notes for user ${numericUserId}`);
+      
+      // Delete user's categories
+      const deleteResult = await client.query(
+        'DELETE FROM categories WHERE user_id = $1 RETURNING id',
+        [numericUserId]
+      );
+      
+      const count = deleteResult.rowCount;
+      
+      // Commit the transaction
+      await client.query('COMMIT');
+      
+      console.log(`User ${numericUserId} deleted ${count} categories`);
+      return res.json({
+        message: 'All categories deleted successfully',
+        count: count
+      });
     }
-    
-    // First update notes (set category to NULL)
-    await db.query(updateQuery, updateParams);
-    
-    // Then delete categories
-    const deleteResult = await db.query(query, params);
-    const count = deleteResult.rowCount;
-    
-    console.log(`Deleted ${count} categories for user ${userId}`);
-    
-    res.json({
-      message: `All categories deleted. Notes have been moved to Uncategorized.`,
-      count: count
-    });
   } catch (err) {
-    console.error('Error deleting all categories:', err);
-    res.status(500).json({ error: 'Server error while deleting all categories' });
+    // Rollback the transaction in case of error
+    await client.query('ROLLBACK');
+    
+    console.error('Error in delete all categories:', err);
+    console.error('Error stack:', err.stack);
+    
+    return res.status(500).json({ 
+      error: 'Server error while deleting categories',
+      message: err.message
+    });
+  } finally {
+    // Release the client back to the pool
+    client.release();
   }
 });
 
 // Delete a category for the current user and update related notes
 router.delete('/:id', async (req, res) => {
+  // Use a client for transaction
+  const client = await db.getClient();
+  
   try {
     const { id } = req.params;
     const userId = req.user.userId;
     
+    // Start transaction
+    await client.query('BEGIN');
+    
     // Handle admin user from .env file (backward compatibility)
     if (userId === 'admin') {
       // Set category_id to NULL for notes in this category
-      await db.query('UPDATE notes SET category_id = NULL WHERE category_id = $1', [id]);
+      await client.query('UPDATE notes SET category_id = NULL WHERE category_id = $1', [id]);
       
       // Delete the category
-      await db.query('DELETE FROM categories WHERE id = $1', [id]);
+      await client.query('DELETE FROM categories WHERE id = $1', [id]);
+      
+      // Commit transaction
+      await client.query('COMMIT');
+      
       return res.json({ message: 'Category deleted' });
     }
     
     // For regular users, verify ownership and handle related notes
+    const numericUserId = parseInt(userId, 10);
     
     // Check if category exists and belongs to user
-    const categoryCheck = await db.query(
+    const categoryCheck = await client.query(
       'SELECT id FROM categories WHERE id = $1 AND user_id = $2',
-      [id, userId]
+      [id, numericUserId]
     );
     
     if (categoryCheck.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Category not found or unauthorized' });
     }
     
     // Set category_id to NULL for notes in this category that belong to the user
-    await db.query(
+    await client.query(
       'UPDATE notes SET category_id = NULL WHERE category_id = $1 AND user_id = $2',
-      [id, userId]
+      [id, numericUserId]
     );
     
     // Delete the category
-    await db.query(
+    await client.query(
       'DELETE FROM categories WHERE id = $1 AND user_id = $2',
-      [id, userId]
+      [id, numericUserId]
     );
+    
+    // Commit transaction
+    await client.query('COMMIT');
     
     res.json({ message: 'Category deleted' });
   } catch (err) {
-    console.error(err);
+    // Rollback transaction
+    await client.query('ROLLBACK');
+    
+    console.error('Error deleting category:', err);
     res.status(500).json({ error: 'Server error' });
+  } finally {
+    // Release client
+    client.release();
   }
 });
 
