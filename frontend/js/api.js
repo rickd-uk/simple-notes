@@ -53,6 +53,13 @@ export async function loadNotes() {
     // Only update UI if notes changed or we didn't have cache
     if (!cachedNotes || JSON.stringify(freshNotes) !== JSON.stringify(cachedNotes)) {
       setNotes(freshNotes);
+
+      // Apply sorting if the function exists
+      if (typeof window.applySortAfterLoad === 'function') {
+        window.applySortAfterLoad();
+      }
+
+
       renderNotes();
     }
     
