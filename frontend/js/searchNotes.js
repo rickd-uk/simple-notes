@@ -1,11 +1,10 @@
-// searchNotes.js - Search functionality for notes
-
-import { getNotes } from './state.js';
-import { renderNotes } from './ui.js';
-import { showToast } from './uiUtils.js';
+// frontend/js/searchNotes.js
+import { getNotes } from "./state.js";
+import { renderNotes } from "./ui.js"; // Assuming this is used by your search/modal logic
+import { showToast } from "./uiUtils.js"; // Assuming this is used
 
 // Keep track of search state
-let currentSearchTerm = '';
+let currentSearchTerm = "";
 let originalNotes = null;
 
 /**
@@ -14,25 +13,14 @@ let originalNotes = null;
  * @returns {Array} - Filtered notes
  */
 function searchNotes(searchTerm) {
-  // Get all notes
   const allNotes = getNotes();
-  
-  // If search term is empty, return all notes
-  if (!searchTerm || searchTerm.trim() === '') {
+  if (!searchTerm || searchTerm.trim() === "") {
     return allNotes;
   }
-  
-  // Normalize search term (lowercase, trim)
   const normalizedTerm = searchTerm.toLowerCase().trim();
-  
-  // Filter notes based on content
-  return allNotes.filter(note => {
-    // Check if content contains search term
-    const content = note.content || '';
-    
-    // For HTML content (from Quill editor), strip HTML tags first
-    const plainContent = content.replace(/<[^>]*>/g, ' ');
-    
+  return allNotes.filter((note) => {
+    const content = note.content || "";
+    const plainContent = content.replace(/<[^>]*>/g, " ");
     return plainContent.toLowerCase().includes(normalizedTerm);
   });
 }
@@ -41,104 +29,90 @@ function searchNotes(searchTerm) {
  * Create a search modal
  */
 function createSearchModal() {
-  // Check if modal already exists
-  if (document.getElementById('searchModal')) {
-    return document.getElementById('searchModal');
+  if (document.getElementById("searchModal")) {
+    return document.getElementById("searchModal");
   }
-  
-  // Create modal elements
-  const modal = document.createElement('div');
-  modal.id = 'searchModal';
-  modal.className = 'modal';
-  
-  const modalContent = document.createElement('div');
-  modalContent.className = 'modal-content';
-  
-  // Add header
-  const header = document.createElement('div');
-  header.className = 'modal-header';
-  header.textContent = 'Search Notes';
-  
-  // Add search input
-  const searchInput = document.createElement('input');
-  searchInput.type = 'text';
-  searchInput.className = 'modal-input';
-  searchInput.id = 'searchInput';
-  searchInput.placeholder = 'Type to search...';
-  
-  // Add search count
-  const searchCount = document.createElement('div');
-  searchCount.id = 'searchCount';
-  searchCount.style.fontSize = '14px';
-  searchCount.style.margin = '10px 0';
-  searchCount.textContent = '';
-  
-  // Add action buttons
-  const actions = document.createElement('div');
-  actions.className = 'modal-actions';
-  
-  const cancelButton = document.createElement('button');
-  cancelButton.className = 'modal-btn modal-btn-cancel';
-  cancelButton.textContent = 'Cancel';
-  
-  const searchButton = document.createElement('button');
-  searchButton.className = 'modal-btn modal-btn-confirm';
-  searchButton.textContent = 'Search';
-  
-  // Assemble the modal
+
+  const modal = document.createElement("div");
+  modal.id = "searchModal";
+  modal.className = "modal";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const header = document.createElement("div");
+  header.className = "modal-header";
+  header.textContent = "Search Notes";
+
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.className = "modal-input";
+  searchInput.id = "searchInput";
+  searchInput.placeholder = "Type to search...";
+
+  const searchCount = document.createElement("div");
+  searchCount.id = "searchCount";
+  searchCount.style.fontSize = "14px";
+  searchCount.style.margin = "10px 0";
+  searchCount.textContent = "";
+
+  const actions = document.createElement("div");
+  actions.className = "modal-actions";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "modal-btn modal-btn-cancel";
+  cancelButton.textContent = "Cancel";
+
+  const performSearchButton = document.createElement("button"); // Renamed to avoid conflict if 'searchButton' is specific
+  performSearchButton.className = "modal-btn modal-btn-confirm";
+  performSearchButton.textContent = "Search";
+
   actions.appendChild(cancelButton);
-  actions.appendChild(searchButton);
-  
+  actions.appendChild(performSearchButton);
+
   modalContent.appendChild(header);
   modalContent.appendChild(searchInput);
   modalContent.appendChild(searchCount);
   modalContent.appendChild(actions);
-  
+
   modal.appendChild(modalContent);
-  
-  // Add to DOM
   document.body.appendChild(modal);
-  
-  // Add event listeners
-  cancelButton.addEventListener('click', closeSearch);
-  
-  searchButton.addEventListener('click', () => {
+
+  cancelButton.addEventListener("click", () => closeSearch(true)); // Pass true to clear search
+
+  performSearchButton.addEventListener("click", () => {
     const term = searchInput.value;
     performSearch(term);
   });
-  
-  // Search as user types (after a delay)
+
   let typingTimer;
-  searchInput.addEventListener('input', () => {
+  searchInput.addEventListener("input", () => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => {
       const term = searchInput.value;
       updateSearchCount(term);
-    }, 300); // Wait 300ms after typing stops
+    }, 300);
   });
-  
-  // Handle Enter key
-  searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
       const term = searchInput.value;
       performSearch(term);
     }
   });
-  
-  // Close modal when clicking outside
-  modal.addEventListener('click', (e) => {
+
+  modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      closeSearch();
+      closeSearch(true); // Pass true to clear search
     }
   });
-  
-  // Also close with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      closeSearch();
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      closeSearch(true); // Pass true to clear search
     }
   });
-  
+
   return modal;
 }
 
@@ -147,55 +121,65 @@ function createSearchModal() {
  * @param {string} term - Search term
  */
 function updateSearchCount(term) {
-  const searchCount = document.getElementById('searchCount');
-  if (!searchCount) return;
-  
-  if (!term || term.trim() === '') {
-    searchCount.textContent = '';
+  const searchCountEl = document.getElementById("searchCount"); // Renamed variable
+  if (!searchCountEl) return;
+
+  if (!term || term.trim() === "") {
+    searchCountEl.textContent = "";
     return;
   }
-  
+
   const matchCount = searchNotes(term).length;
-  const totalCount = getNotes().length;
-  
-  searchCount.textContent = `Found ${matchCount} match${matchCount !== 1 ? 'es' : ''} out of ${totalCount} note${totalCount !== 1 ? 's' : ''}`;
+  const totalCount = getNotes().length; // Assuming getNotes() gives all notes before filtering
+
+  searchCountEl.textContent = `Found ${matchCount} match${matchCount !== 1 ? "es" : ""} out of ${totalCount} note${totalCount !== 1 ? "s" : ""}`;
 }
 
 /**
  * Show the search modal
  */
 function showSearch() {
-  const modal = createSearchModal();
-  modal.classList.add('active');
-  
-  // Focus the search input
+  console.log("[searchNotes.js] showSearch called");
+  const modal = createSearchModal(); // Ensure modal is created if not exists
+  modal.classList.add("active");
+
   setTimeout(() => {
-    const searchInput = document.getElementById('searchInput');
+    const searchInput = document.getElementById("searchInput");
     if (searchInput) {
       searchInput.focus();
-      
-      // If there's a previous search term, restore it
       if (currentSearchTerm) {
         searchInput.value = currentSearchTerm;
         updateSearchCount(currentSearchTerm);
+      } else {
+        searchInput.value = ""; // Clear previous term if not restoring
+        updateSearchCount(""); // Clear count
       }
     }
-  }, 100);
+  }, 100); // Short delay for modal animation and focus
 }
 
 /**
  * Close the search modal and optionally clear search
- * @param {boolean} clearSearch - Whether to clear the search results
+ * @param {boolean} shouldClearSearch - Whether to clear the search results
  */
-function closeSearch(clearSearch = true) {
-  const modal = document.getElementById('searchModal');
+function closeSearch(shouldClearSearch) {
+  console.log(
+    `[searchNotes.js] closeSearch called. shouldClearSearch: ${shouldClearSearch}`,
+  );
+  const modal = document.getElementById("searchModal");
   if (modal) {
-    modal.classList.remove('active');
+    modal.classList.remove("active");
   }
-  
-  // If clearSearch is true, restore original notes
-  if (clearSearch && originalNotes && currentSearchTerm) {
+
+  if (shouldClearSearch && originalNotes && currentSearchTerm) {
+    console.log(
+      "[searchNotes.js] Clearing search and restoring original notes.",
+    );
     restoreOriginalNotes();
+  } else if (shouldClearSearch) {
+    // If not restoring (e.g. modal closed without search), ensure search term is reset
+    currentSearchTerm = "";
+    originalNotes = null;
   }
 }
 
@@ -203,39 +187,48 @@ function closeSearch(clearSearch = true) {
  * Perform search on notes
  * @param {string} term - Search term
  */
-function performSearch(term) {
-  // Store current state if this is a new search
-  if (!currentSearchTerm) {
-    originalNotes = [...getNotes()];
+async function performSearch(term) {
+  // Made async to align with potential async operations in state/render
+  console.log(`[searchNotes.js] performSearch called with term: "${term}"`);
+  if (!originalNotes && (!currentSearchTerm || term !== currentSearchTerm)) {
+    // Store original notes only on a new search action
+    originalNotes = [...getNotes()]; // Get a fresh copy of all notes
+    console.log(
+      "[searchNotes.js] Stored original notes. Count:",
+      originalNotes.length,
+    );
   }
-  
-  // Update current search term
-  currentSearchTerm = term;
-  
-  if (!term || term.trim() === '') {
-    // If search term is empty, restore original notes
+
+  currentSearchTerm = term.trim();
+
+  if (!currentSearchTerm) {
+    console.log(
+      "[searchNotes.js] Search term is empty. Restoring original notes.",
+    );
     restoreOriginalNotes();
-    closeSearch();
+    closeSearch(false); // Don't re-clear, already handled by restoreOriginalNotes
     return;
   }
-  
-  // Filter notes
-  const filteredNotes = searchNotes(term);
-  
-  // Update UI
-  import('./state.js').then(module => {
-    module.setNotes(filteredNotes);
-    renderNotes();
-    
-    // Display search results message
-    showToast(`Showing ${filteredNotes.length} search result${filteredNotes.length !== 1 ? 's' : ''}`);
-    
-    // Hide modal
-    closeSearch(false); // Don't clear search when closing
-    
-    // Add search indicator to the UI
-    addSearchIndicator(term);
-  });
+
+  const filteredNotes = searchNotes(currentSearchTerm);
+  console.log(`[searchNotes.js] Filtered notes count: ${filteredNotes.length}`);
+
+  try {
+    const stateModule = await import("./state.js");
+    stateModule.setNotes(filteredNotes); // Update state with filtered notes
+    renderNotes(); // Re-render the notes list with filtered notes
+
+    showToast(
+      `Showing ${filteredNotes.length} search result${filteredNotes.length !== 1 ? "s" : ""}`,
+    );
+    closeSearch(false); // Close modal, don't clear the active search results
+    addSearchIndicator(currentSearchTerm);
+  } catch (error) {
+    console.error(
+      "[searchNotes.js] Error during performSearch state update or render:",
+      error,
+    );
+  }
 }
 
 /**
@@ -243,49 +236,37 @@ function performSearch(term) {
  * @param {string} term - Search term
  */
 function addSearchIndicator(term) {
-  // Remove any existing search indicator
-  removeSearchIndicator();
-  
-  // Create search indicator
-  const indicator = document.createElement('div');
-  indicator.id = 'searchIndicator';
-  indicator.className = 'search-indicator';
-  
-  // Style the indicator
+  removeSearchIndicator(); // Remove any existing one
+
+  const indicator = document.createElement("div");
+  indicator.id = "searchIndicator";
+  indicator.className = "search-indicator"; // For CSS styling
   indicator.style.cssText = `
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--primary-color);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  `;
-  
-  // Add content
+        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+        background-color: var(--primary-color, #6200ee); color: white; padding: 8px 16px;
+        border-radius: 20px; font-size: 14px; z-index: 1001; display: flex;
+        align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);`;
+
   indicator.innerHTML = `
-    <span style="margin-right: 8px;">Search: "${term}"</span>
-    <button id="clearSearchBtn" style="background: none; border: none; color: white; cursor: pointer; font-weight: bold;">✕</button>
-  `;
-  
-  // Add to DOM
+        <span style="margin-right: 8px;">Search: "${term}"</span>
+        <button id="clearSearchBtnIndicator" style="background:none;border:none;color:white;cursor:pointer;font-weight:bold;font-size:16px;line-height:1;">✕</button>
+    `;
   document.body.appendChild(indicator);
-  
-  // Add event listener to clear button
-  document.getElementById('clearSearchBtn').addEventListener('click', restoreOriginalNotes);
+
+  document
+    .getElementById("clearSearchBtnIndicator")
+    .addEventListener("click", () => {
+      console.log("[searchNotes.js] Clear search from indicator clicked.");
+      restoreOriginalNotes();
+      closeSearch(true); // Ensure modal is closed and state is reset
+    });
 }
 
 /**
  * Remove search indicator from UI
  */
 function removeSearchIndicator() {
-  const indicator = document.getElementById('searchIndicator');
+  const indicator = document.getElementById("searchIndicator");
   if (indicator) {
     indicator.remove();
   }
@@ -294,84 +275,120 @@ function removeSearchIndicator() {
 /**
  * Restore original notes (before search filtering)
  */
-function restoreOriginalNotes() {
+async function restoreOriginalNotes() {
+  // Made async
+  console.log("[searchNotes.js] restoreOriginalNotes called.");
   if (originalNotes) {
-    import('./state.js').then(module => {
-      module.setNotes(originalNotes);
-      renderNotes();
-      
-      // Reset search state
+    try {
+      const stateModule = await import("./state.js");
+      stateModule.setNotes(originalNotes); // Restore notes in state
+      renderNotes(); // Re-render with original notes
+
       originalNotes = null;
-      currentSearchTerm = '';
-      
-      // Remove search indicator
+      currentSearchTerm = "";
       removeSearchIndicator();
-    });
+      console.log(
+        "[searchNotes.js] Original notes restored and search state reset.",
+      );
+    } catch (error) {
+      console.error(
+        "[searchNotes.js] Error during restoreOriginalNotes state update or render:",
+        error,
+      );
+    }
+  } else {
+    // If originalNotes is null, it might mean we need to reload all notes
+    // This case depends on how your application fetches notes initially
+    console.log(
+      "[searchNotes.js] No originalNotes to restore, current search term was likely empty or not set.",
+    );
+    currentSearchTerm = ""; // Ensure search term is cleared
+    removeSearchIndicator();
   }
 }
 
 /**
- * Initialize search functionality
+ * Initialize search functionality by attaching event listener to the search button
  */
 function initSearchFunctionality() {
-  // Find the search button
-  const searchButton = document.getElementById('searchButton');
-  if (!searchButton) {
-    console.error('Search button not found');
+  console.log(
+    "[searchNotes.js] Attempting to initialize search functionality (event listener setup)...",
+  );
+  const mainSearchButton = document.getElementById("searchButton"); // This is the button in the main header
+
+  if (!mainSearchButton) {
+    console.error(
+      '[searchNotes.js] Main search button (id="searchButton") NOT FOUND in the DOM even after uiControlsReady. Cannot attach listener.',
+    );
     return;
   }
-  
-  // Add click event listener
-  searchButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    showSearch();
-    return false;
-  }, true); // Use capture phase to ensure our handler runs first
-  
-  console.log('Search functionality initialized');
+
+  console.log(
+    '[searchNotes.js] Main search button (id="searchButton") FOUND. Adding click listener.',
+  );
+  mainSearchButton.addEventListener(
+    "click",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("[searchNotes.js] Main search button clicked.");
+      showSearch(); // This function creates and shows the search modal
+    },
+    true,
+  ); // Use capture phase if needed, or false for bubbling
+
+  console.log(
+    "[searchNotes.js] Search functionality (event listener on main button) initialized.",
+  );
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Wait a bit to ensure everything else is loaded
-  setTimeout(initSearchFunctionality, 1000);
+// REMOVED old DOMContentLoaded and setTimeout logic.
+// We now ONLY initialize when 'uiControlsReady' is dispatched.
+document.addEventListener("uiControlsReady", () => {
+  console.log(
+    '[searchNotes.js] "uiControlsReady" event received. Initializing search functionality.',
+  );
+  initSearchFunctionality();
 });
 
-// Add some CSS for the search feature
-const style = document.createElement('style');
+// Add some CSS for the search feature (modal and indicator)
+// This can stay as it just adds styles and doesn't depend on DOM elements being ready immediately.
+const style = document.createElement("style");
 style.textContent = `
-  /* Search modal specific styles */
-  #searchModal .modal-content {
-    max-width: 500px;
-  }
-  
-  #searchModal .modal-header {
-    color: var(--primary-color);
-  }
-  
-  #searchInput {
-    width: 100%;
-    padding: 10px;
-    border-radius: var(--border-radius);
-    border: 1px solid #e0e0e0;
-    font-size: 16px;
-  }
-  
-  #searchInput:focus {
-    outline: none;
-    border-color: var(--primary-color);
-  }
-  
-  /* Dark mode support */
-  body.dark-mode #searchInput {
-    background-color: #2a2a2a;
-    border-color: var(--border-color);
-    color: var(--text-color);
-  }
-  
-  body.dark-mode #searchInput:focus {
-    border-color: var(--primary-color);
-  }
+    /* Search modal specific styles */
+    #searchModal .modal-content {
+        max-width: 500px; /* Or your preferred width */
+    }
+    #searchModal .modal-header {
+        color: var(--primary-color, #6200ee); /* Fallback color */
+        /* Add other header styles as needed */
+    }
+    #searchInput { /* ID of the input inside the modal */
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px; /* Space before count/buttons */
+        border-radius: var(--border-radius, 4px);
+        border: 1px solid #e0e0e0;
+        font-size: 16px;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+    #searchInput:focus {
+        outline: none;
+        border-color: var(--primary-color, #6200ee); /* Fallback color */
+        box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.2); /* Optional focus ring */
+    }
+    /* Dark mode support for search input */
+    body.dark-mode #searchInput {
+        background-color: var(--dm-surface-color, #2a2a2a); /* Fallback dark bg */
+        border-color: var(--dm-border-color, #444); /* Fallback dark border */
+        color: var(--dm-text-color, #e0e0e0); /* Fallback dark text */
+    }
+    body.dark-mode #searchInput:focus {
+        border-color: var(--primary-color, #bb86fc); /* Dark mode primary focus */
+    }
+    /* Search indicator styles are applied via JS inline or a dedicated class */
+    .search-indicator {
+        /* You can define base styles here if preferred over inline JS styles */
+    }
 `;
 document.head.appendChild(style);

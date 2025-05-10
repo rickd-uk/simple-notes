@@ -1,241 +1,292 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#6200ee">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#6200ee" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <title>Simple Notes</title>
-    <link rel="icon" href="icons/favicon.ico" type="image/x-icon">
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/android-chrome-512x512.png">
-    
+    <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="icons/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="icons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="icons/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="icons/android-chrome-512x512.png"
+    />
+
     <!-- Quill.js CSS -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    
+    <link
+      href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
+      rel="stylesheet"
+    />
+
     <!-- App CSS -->
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/categories.css">
-    <link rel="stylesheet" href="css/notes.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/modals.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="css/quill-editor.css">
-    <link rel="stylesheet" href="css/modal-fix.css">
-    <link rel="stylesheet" href="css/row-limit-fix.css">
-    <link rel="stylesheet" href="css/sidebar-fix.css">
-    <link rel="stylesheet" href="css/dark-mode.css">
-    <link rel="stylesheet" href="css/confirm-modal.css">
-    <link rel="stylesheet" href="css/note-category-selector.css">
-    <link rel="stylesheet" href="css/toolbar-toggle.css">
-    <link rel="stylesheet" href="css/spellcheck-toggle.css">
-    <link rel="stylesheet" href="css/multi-category-modal.css">
-    <link rel="stylesheet" href="css/note-controls.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/categories.css" />
+    <link rel="stylesheet" href="css/notes.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/modals.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/quill-editor.css" />
+    <link rel="stylesheet" href="css/modal-fix.css" />
+    <link rel="stylesheet" href="css/row-limit-fix.css" />
+    <link rel="stylesheet" href="css/sidebar-fix.css" />
+    <link rel="stylesheet" href="css/dark-mode.css" />
+    <link rel="stylesheet" href="css/confirm-modal.css" />
+    <link rel="stylesheet" href="css/note-category-selector.css" />
+    <link rel="stylesheet" href="css/toolbar-toggle.css" />
+    <link rel="stylesheet" href="css/spellcheck-toggle.css" />
+    <link rel="stylesheet" href="css/multi-category-modal.css" />
+    <link rel="stylesheet" href="css/note-controls.css" />
+  </head>
+  <body>
     <div class="sidebar">
-       <div class="frontpage-image">
-         <!--  <img src="images/simple-notes.png" alt="Simple Notes"
+      <div class="frontpage-image">
+        <!--  <img src="images/simple-notes.png" alt="Simple Notes"
         onerror="this.outerHTML='<div class=\'fallback-text\'>Welcome to Simple Notes!</div>'" > 
 
          -->
-       </div> 
-        <div class="categories">
-          <div class="category active" data-id="all">
-              <div class="category-icon">📄</div>
-              <div class="category-name">All Notes</div>
-          </div>
+      </div>
+      <div class="categories">
+        <div class="category active" data-id="all">
+          <div class="category-icon">📄</div>
+          <div class="category-name">All Notes</div>
+        </div>
         <div class="category" data-id="uncategorized">
-            <div class="category-icon">📌</div>
-            <div class="category-name">Uncategorized</div>
+          <div class="category-icon">📌</div>
+          <div class="category-name">Uncategorized</div>
         </div>
         <!-- Custom categories will be added here -->
-        </div>
-        <div class="add-category">
-            <button class="add-category-btn" id="addCategoryBtn">+ Add Category</button>
-        </div>
-        <div class="dark-mode-toggle">
-            <span class="dark-mode-label">
-                <span class="theme-icon-light">☀️ Light</span>
-                <span class="theme-icon-dark">🌙 Dark</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="darkModeToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="sidebar-footer">
-            <button id="logoutBtn" class="logout-btn">Logout</button>
-        </div>
+      </div>
+      <div class="add-category">
+        <button class="add-category-btn" id="addCategoryBtn">
+          + Add Category
+        </button>
+      </div>
+      <div class="dark-mode-toggle">
+        <span class="dark-mode-label">
+          <span class="theme-icon-light">☀️ Light</span>
+          <span class="theme-icon-dark">🌙 Dark</span>
+        </span>
+        <label class="switch">
+          <input type="checkbox" id="darkModeToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
     </div>
-    
+
     <div class="main">
-        <div class="notes-header">
-          <!-- <div class="current-category">All Notes</div>  -->
-            <div class="user-info">
-              <span class="username-display" id="usernameDisplay">Loading...</span>
-            </div>
-            <button class="add-note-btn" id="addNoteBtn">+</button>
+      <div class="notes-header">
+        <!-- <div class="current-category">All Notes</div>  -->
+        <div class="user-info">
+          <span class="username-display" id="usernameDisplay">Loading...</span>
         </div>
-        <div class="notes-container" id="notesContainer">
-            <!-- Notes will be added here -->
-            <div class="empty-state">
-                <div class="empty-icon">📝</div>
-                <div class="empty-message">No notes yet</div>
-                <button class="empty-action" id="emptyAddNoteBtn">Create your first note</button>
-            </div>
+        <button class="add-note-btn" id="addNoteBtn">+</button>
+      </div>
+      <div class="notes-container" id="notesContainer">
+        <!-- Notes will be added here -->
+        <div class="empty-state">
+          <div class="empty-icon">📝</div>
+          <div class="empty-message">No notes yet</div>
+          <button class="empty-action" id="emptyAddNoteBtn">
+            Create your first note
+          </button>
         </div>
+      </div>
     </div>
-    
+
     <!-- Add Category Modal -->
     <div class="modal" id="categoryModal">
-        <div class="modal-content">
-            <div class="modal-header" id="categoryModalHeader">Add New Category</div>
-            <input type="text" class="modal-input" id="categoryInput" placeholder="Category name">
-            <div class="icon-selector">
-                <div class="icon-selector-label">Select an icon:</div>
-                <div class="icon-grid" id="iconGrid">
-                    <div class="icon-item selected" data-icon="📁">📁</div>
-                      <!-- Original icons -->
-                      <div class="icon-item selected" data-icon="📁">📁</div>
-                      <div class="icon-item" data-icon="📝">📝</div>
-                      <div class="icon-item" data-icon="📌">📌</div>
-                      <div class="icon-item" data-icon="💼">💼</div>
-                      <div class="icon-item" data-icon="🏠">🏠</div>
-                      <div class="icon-item" data-icon="🔖">🔖</div>
-                      <div class="icon-item" data-icon="📚">📚</div>
-                      <div class="icon-item" data-icon="💡">💡</div>
-                      
-                      <!-- Technology Icons -->
-                      <div class="icon-item" data-icon="💻">💻</div>
-                      <div class="icon-item" data-icon="📱">📱</div>
-                      <div class="icon-item" data-icon="⌨️">⌨️</div>
-                      <div class="icon-item" data-icon="🖥️">🖥️</div>
-                      <div class="icon-item" data-icon="🖨️">🖨️</div>
-                      <div class="icon-item" data-icon="📲">📲</div>
-                      <div class="icon-item" data-icon="🔌">🔌</div>
-                      <div class="icon-item" data-icon="🔋">🔋</div>
-                      
-                      <!-- Movie/Entertainment Icons -->
-                      <div class="icon-item" data-icon="🎬">🎬</div>
-                      <div class="icon-item" data-icon="🎞️">🎞️</div>
-                      <div class="icon-item" data-icon="🎥">🎥</div>
-                      <div class="icon-item" data-icon="📺">📺</div>
-                      <div class="icon-item" data-icon="🍿">🍿</div>
-                      <div class="icon-item" data-icon="🎭">🎭</div>
-                      <div class="icon-item" data-icon="📽️">📽️</div>
-                      <div class="icon-item" data-icon="🎦">🎦</div>
-                      
-                      <!-- Music Icons -->
-                      <div class="icon-item" data-icon="🎵">🎵</div>
-                      <div class="icon-item" data-icon="🎶">🎶</div>
-                      <div class="icon-item" data-icon="🎸">🎸</div>
-                      <div class="icon-item" data-icon="🎹">🎹</div>
-                      <div class="icon-item" data-icon="🎷">🎷</div>
-                      <div class="icon-item" data-icon="🎺">🎺</div>
-                      <div class="icon-item" data-icon="🎻">🎻</div>
-                      <div class="icon-item" data-icon="🥁">🥁</div>
-                      
-                      <!-- Science Icons -->
-                      <div class="icon-item" data-icon="🔬">🔬</div>
-                      <div class="icon-item" data-icon="🔭">🔭</div>
-                      <div class="icon-item" data-icon="⚗️">⚗️</div>
-                      <div class="icon-item" data-icon="🧪">🧪</div>
-                      <div class="icon-item" data-icon="🧬">🧬</div>
-                      <div class="icon-item" data-icon="🧫">🧫</div>
-                      <div class="icon-item" data-icon="🧮">🧮</div>
-                      <div class="icon-item" data-icon="⚛️">⚛️</div>
-                      
-                      <!-- Previous icons continued -->
-                      <div class="icon-item" data-icon="🎓">🎓</div>
-                      <div class="icon-item" data-icon="🎯">🎯</div>
-                      <div class="icon-item" data-icon="📊">📊</div>
-                      <div class="icon-item" data-icon="📅">📅</div>
-                      <div class="icon-item" data-icon="❤️">❤️</div>
-                      <div class="icon-item" data-icon="🍎">🍎</div>
-                      <div class="icon-item" data-icon="🚗">🚗</div>
-                      <div class="icon-item" data-icon="✈️">✈️</div>
-                      
-                      <!-- Additional icons from previous version -->
-                      <div class="icon-item" data-icon="⭐">⭐</div>
-                      <div class="icon-item" data-icon="🔥">🔥</div>
-                      <div class="icon-item" data-icon="💰">💰</div>
-                      <div class="icon-item" data-icon="🏆">🏆</div>
-                      <div class="icon-item" data-icon="🎮">🎮</div>
-                      <div class="icon-item" data-icon="🌟">🌟</div>
-                      <div class="icon-item" data-icon="🏋️">🏋️</div>
-                      <div class="icon-item" data-icon="🧠">🧠</div>
-                      
-                      <!-- Food and Drink Icons -->
-                      <div class="icon-item" data-icon="🍔">🍔</div>
-                      <div class="icon-item" data-icon="🍕">🍕</div>
-                      <div class="icon-item" data-icon="🍷">🍷</div>
-                      <div class="icon-item" data-icon="🍰">🍰</div>
-                      <div class="icon-item" data-icon="🍲">🍲</div>
-                      <div class="icon-item" data-icon="🍺">🍺</div>
-                      <div class="icon-item" data-icon="☕">☕</div>
-                      <div class="icon-item" data-icon="🍩">🍩</div>
-                      
-                      <!-- Travel Icons -->
-                      <div class="icon-item" data-icon="🚀">🚀</div>
-                      <div class="icon-item" data-icon="🌍">🌍</div>
-                      <div class="icon-item" data-icon="🏝️">🏝️</div>
-                      <div class="icon-item" data-icon="🏔️">🏔️</div>
-                      <div class="icon-item" data-icon="🗺️">🗺️</div>
-                      <div class="icon-item" data-icon="🧳">🧳</div>
-                      <div class="icon-item" data-icon="🏖️">🏖️</div>
-                      <div class="icon-item" data-icon="🚆">🚆</div>
-                      
-                      <!-- Misc Useful Icons -->
-                      <div class="icon-item" data-icon="🔒">🔒</div>
-                      <div class="icon-item" data-icon="💭">💭</div>
-                      <div class="icon-item" data-icon="📋">📋</div>
-                      <div class="icon-item" data-icon="⏰">⏰</div>
-                      <div class="icon-item" data-icon="💪">💪</div>
-                      <div class="icon-item" data-icon="🏡">🏡</div>
-                      <div class="icon-item" data-icon="🌱">🌱</div>
-                      <div class="icon-item" data-icon="📷">📷</div>           
-                    </div>
-
-            </div>
-            <input type="hidden" id="categoryIconInput" value="📁">
-            <input type="hidden" id="categoryEditId">
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" id="cancelCategoryBtn">Close</button>
-                <button class="modal-btn modal-btn-confirm" id="confirmCategoryBtn">Add</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header" id="categoryModalHeader">
+          Add New Category
         </div>
+        <input
+          type="text"
+          class="modal-input"
+          id="categoryInput"
+          placeholder="Category name"
+        />
+        <div class="icon-selector">
+          <div class="icon-selector-label">Select an icon:</div>
+          <div class="icon-grid" id="iconGrid">
+            <div class="icon-item selected" data-icon="📁">📁</div>
+            <!-- Original icons -->
+            <div class="icon-item selected" data-icon="📁">📁</div>
+            <div class="icon-item" data-icon="📝">📝</div>
+            <div class="icon-item" data-icon="📌">📌</div>
+            <div class="icon-item" data-icon="💼">💼</div>
+            <div class="icon-item" data-icon="🏠">🏠</div>
+            <div class="icon-item" data-icon="🔖">🔖</div>
+            <div class="icon-item" data-icon="📚">📚</div>
+            <div class="icon-item" data-icon="💡">💡</div>
+
+            <!-- Technology Icons -->
+            <div class="icon-item" data-icon="💻">💻</div>
+            <div class="icon-item" data-icon="📱">📱</div>
+            <div class="icon-item" data-icon="⌨️">⌨️</div>
+            <div class="icon-item" data-icon="🖥️">🖥️</div>
+            <div class="icon-item" data-icon="🖨️">🖨️</div>
+            <div class="icon-item" data-icon="📲">📲</div>
+            <div class="icon-item" data-icon="🔌">🔌</div>
+            <div class="icon-item" data-icon="🔋">🔋</div>
+
+            <!-- Movie/Entertainment Icons -->
+            <div class="icon-item" data-icon="🎬">🎬</div>
+            <div class="icon-item" data-icon="🎞️">🎞️</div>
+            <div class="icon-item" data-icon="🎥">🎥</div>
+            <div class="icon-item" data-icon="📺">📺</div>
+            <div class="icon-item" data-icon="🍿">🍿</div>
+            <div class="icon-item" data-icon="🎭">🎭</div>
+            <div class="icon-item" data-icon="📽️">📽️</div>
+            <div class="icon-item" data-icon="🎦">🎦</div>
+
+            <!-- Music Icons -->
+            <div class="icon-item" data-icon="🎵">🎵</div>
+            <div class="icon-item" data-icon="🎶">🎶</div>
+            <div class="icon-item" data-icon="🎸">🎸</div>
+            <div class="icon-item" data-icon="🎹">🎹</div>
+            <div class="icon-item" data-icon="🎷">🎷</div>
+            <div class="icon-item" data-icon="🎺">🎺</div>
+            <div class="icon-item" data-icon="🎻">🎻</div>
+            <div class="icon-item" data-icon="🥁">🥁</div>
+
+            <!-- Science Icons -->
+            <div class="icon-item" data-icon="🔬">🔬</div>
+            <div class="icon-item" data-icon="🔭">🔭</div>
+            <div class="icon-item" data-icon="⚗️">⚗️</div>
+            <div class="icon-item" data-icon="🧪">🧪</div>
+            <div class="icon-item" data-icon="🧬">🧬</div>
+            <div class="icon-item" data-icon="🧫">🧫</div>
+            <div class="icon-item" data-icon="🧮">🧮</div>
+            <div class="icon-item" data-icon="⚛️">⚛️</div>
+
+            <!-- Previous icons continued -->
+            <div class="icon-item" data-icon="🎓">🎓</div>
+            <div class="icon-item" data-icon="🎯">🎯</div>
+            <div class="icon-item" data-icon="📊">📊</div>
+            <div class="icon-item" data-icon="📅">📅</div>
+            <div class="icon-item" data-icon="❤️">❤️</div>
+            <div class="icon-item" data-icon="🍎">🍎</div>
+            <div class="icon-item" data-icon="🚗">🚗</div>
+            <div class="icon-item" data-icon="✈️">✈️</div>
+
+            <!-- Additional icons from previous version -->
+            <div class="icon-item" data-icon="⭐">⭐</div>
+            <div class="icon-item" data-icon="🔥">🔥</div>
+            <div class="icon-item" data-icon="💰">💰</div>
+            <div class="icon-item" data-icon="🏆">🏆</div>
+            <div class="icon-item" data-icon="🎮">🎮</div>
+            <div class="icon-item" data-icon="🌟">🌟</div>
+            <div class="icon-item" data-icon="🏋️">🏋️</div>
+            <div class="icon-item" data-icon="🧠">🧠</div>
+
+            <!-- Food and Drink Icons -->
+            <div class="icon-item" data-icon="🍔">🍔</div>
+            <div class="icon-item" data-icon="🍕">🍕</div>
+            <div class="icon-item" data-icon="🍷">🍷</div>
+            <div class="icon-item" data-icon="🍰">🍰</div>
+            <div class="icon-item" data-icon="🍲">🍲</div>
+            <div class="icon-item" data-icon="🍺">🍺</div>
+            <div class="icon-item" data-icon="☕">☕</div>
+            <div class="icon-item" data-icon="🍩">🍩</div>
+
+            <!-- Travel Icons -->
+            <div class="icon-item" data-icon="🚀">🚀</div>
+            <div class="icon-item" data-icon="🌍">🌍</div>
+            <div class="icon-item" data-icon="🏝️">🏝️</div>
+            <div class="icon-item" data-icon="🏔️">🏔️</div>
+            <div class="icon-item" data-icon="🗺️">🗺️</div>
+            <div class="icon-item" data-icon="🧳">🧳</div>
+            <div class="icon-item" data-icon="🏖️">🏖️</div>
+            <div class="icon-item" data-icon="🚆">🚆</div>
+
+            <!-- Misc Useful Icons -->
+            <div class="icon-item" data-icon="🔒">🔒</div>
+            <div class="icon-item" data-icon="💭">💭</div>
+            <div class="icon-item" data-icon="📋">📋</div>
+            <div class="icon-item" data-icon="⏰">⏰</div>
+            <div class="icon-item" data-icon="💪">💪</div>
+            <div class="icon-item" data-icon="🏡">🏡</div>
+            <div class="icon-item" data-icon="🌱">🌱</div>
+            <div class="icon-item" data-icon="📷">📷</div>
+          </div>
+        </div>
+        <input type="hidden" id="categoryIconInput" value="📁" />
+        <input type="hidden" id="categoryEditId" />
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" id="cancelCategoryBtn">
+            Close
+          </button>
+          <button class="modal-btn modal-btn-confirm" id="confirmCategoryBtn">
+            Add
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Confirm Modal -->
     <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header" id="confirmModalHeader">Confirm Delete</div>
-            <div class="modal-message" id="confirmModalMessage">
-                Are you sure you want to delete ALL notes in this category? This action cannot be undone.
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" id="cancelConfirmBtn">Cancel</button>
-                <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn">Delete All</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header" id="confirmModalHeader">Confirm Delete</div>
+        <div class="modal-message" id="confirmModalMessage">
+          Are you sure you want to delete ALL notes in this category? This
+          action cannot be undone.
         </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" id="cancelConfirmBtn">
+            Cancel
+          </button>
+          <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn">
+            Delete All
+          </button>
+        </div>
+      </div>
     </div>
 
-    
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>
-    
+
     <!-- Quill.js JavaScript -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    
+
     <!-- App JavaScript -->
     <script type="module" src="js/searchNotes.js"></script>
     <script type="module" src="js/sortNotes.js"></script>
     <script type="module" src="js/main.js"></script>
-</body>
+  </body>
 </html>
